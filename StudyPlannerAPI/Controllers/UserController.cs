@@ -27,7 +27,7 @@ namespace StudyPlannerAPI.Controllers
             {
                 await _userService.RegisterUser(userDTO);
 
-                return Ok("Konto zostało pomyślnie utworzone");
+                return Ok("Konto zostało pomyślnie utworzone.");
             }
 
             return BadRequest(validationResult.Errors);
