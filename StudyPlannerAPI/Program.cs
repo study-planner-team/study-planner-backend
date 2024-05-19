@@ -1,6 +1,9 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.DTO;
 using StudyPlannerAPI.Services.UserServices;
+using StudyPlannerAPI.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +20,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserValidator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
