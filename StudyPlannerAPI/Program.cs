@@ -15,7 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-                   options.UseSqlServer(builder.Configuration.GetConnectionString("TemporaryDatabase")));
+                   options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnString")));
 
 builder.Services.AddAutoMapper(typeof(Program));
 
