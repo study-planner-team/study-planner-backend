@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +8,7 @@ using StudyPlannerAPI.Models;
 using StudyPlannerAPI.Models.DTO;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace StudyPlannerAPI.Services.UserServices
@@ -33,22 +35,77 @@ namespace StudyPlannerAPI.Services.UserServices
             return userDTO;
         }
 
-        public async Task<string> LoginUser(UserLoginDTO loginDTO)
+        public async Task<(string?,string?, User?)> LoginUser(UserLoginDTO loginDTO)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Username.Equals(loginDTO.Username));
 
             if (user != null && BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.PasswordHash))
-                return CreateToken(user);
+            {
+                var accessToken = CreateToken(user, 25);
+                var refreshToken = GenerateRefreshToken();
 
-            return null;
+                // Save refresh token to database with expiration
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // 7 days expiry for refresh token
+                await _context.SaveChangesAsync();
+
+                return (accessToken, refreshToken, user);
+            }
+
+            return (null,null, null);
         }
 
-        public string CreateToken(User user)
+        public async Task<(string?, string?)> RefreshToken(string oldRefreshToken)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == oldRefreshToken);
+
+            Console.WriteLine($"Incoming Refresh Token: {oldRefreshToken}");
+            Console.WriteLine($"Stored Refresh Token: {user?.RefreshToken}");
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return (null, null); // Invalid or expired refresh token
+            }
+
+            var newAccessToken = CreateToken(user, 25);
+            var newRefreshToken = GenerateRefreshToken();
+
+            // Update the user's refresh token and expiration
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"Generated Refresh Token: {newRefreshToken}");
+
+            return (newAccessToken, newRefreshToken);
+        }
+        public async Task<bool> LogoutUser(string refreshToken)
+        {
+            // Find the user by ID and refresh token
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+
+            if (user == null)
+            {
+                return false; // User or refresh token not found
+            }
+
+            // Invalidate the refresh token
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        private string CreateToken(User user, int expiration)
         {
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()) //userId
             };
 
             var token = new JwtSecurityToken
@@ -56,16 +113,27 @@ namespace StudyPlannerAPI.Services.UserServices
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(45),
+                expires: DateTime.UtcNow.AddMinutes(expiration),
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(
                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
                     SecurityAlgorithms.HmacSha256)
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return tokenString;
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+
+            using (var numberGenerator = RandomNumberGenerator.Create())
+            {
+                numberGenerator.GetBytes(randomNumber);
+            }
+
+            return Convert.ToBase64String(randomNumber);
+        }
+
     }
 }
