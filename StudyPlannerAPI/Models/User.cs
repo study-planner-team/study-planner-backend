@@ -13,5 +13,9 @@ namespace StudyPlannerAPI.Models
         public required string PasswordHash { get; set; } 
 
         public required string Email { get; set; }
+
+        public string? RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpiryTime { get; set; }
     }
 }

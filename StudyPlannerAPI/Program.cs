@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.DTO;
@@ -24,16 +25,18 @@ builder.Services.AddCors(options =>
         {
             builder.WithOrigins("#") //TODO: Add once the frontend is deployed
                    .AllowAnyHeader()
-                   .AllowAnyMethod();
+                   .AllowAnyMethod()
+                   .AllowCredentials();
         });
 
-    options.AddPolicy("AllowAll",
-          builder =>
-          {
-              builder.AllowAnyOrigin()
-                     .AllowAnyHeader()
-                     .AllowAnyMethod();
-          });
+    options.AddPolicy("AllowLocalhost",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000") // Your frontend URL
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials(); 
+        });
 });
 
 
@@ -58,6 +61,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+
+
+    // Custom token retrieval from cookies
+    x.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Retrieve the token from the HttpOnly cookie
+            var token = context.Request.Cookies["accessToken"];
+
+            // Set the token in the context if it exists
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+
 });
 
 var app = builder.Build();
@@ -67,14 +90,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("AllowAll");
+    app.UseCors("AllowLocalhost");
 } else
 {
-    app.UseCors("AllowSpecificOrigins");
+    app.UseCors("AllowProductionOrigins");
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
