@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
-using StudyPlannerAPI.Models;
-using StudyPlannerAPI.Models.DTO;
+using StudyPlannerAPI.Models.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -35,7 +35,7 @@ namespace StudyPlannerAPI.Services.UserServices
             return userDTO;
         }
 
-        public async Task<(string?,string?, User?)> LoginUser(UserLoginDTO loginDTO)
+        public async Task<(string?,string?, UserResponseDTO?)> LoginUser(UserLoginDTO loginDTO)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Username.Equals(loginDTO.Username));
 
@@ -49,7 +49,9 @@ namespace StudyPlannerAPI.Services.UserServices
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // 7 days expiry for refresh token
                 await _context.SaveChangesAsync();
 
-                return (accessToken, refreshToken, user);
+                var userResponse = _mapper.Map<UserResponseDTO>(user);
+
+                return (accessToken, refreshToken, userResponse);
             }
 
             return (null,null, null);
@@ -94,6 +96,36 @@ namespace StudyPlannerAPI.Services.UserServices
             user.RefreshTokenExpiryTime = null;
 
             // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<UserResponseDTO?> UpdateUser(int userId, UserUpdateDTO userDTO)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return null;
+
+            user.Username = userDTO.Username;
+            user.Email = userDTO.Email;
+            user.IsPublic = userDTO.IsPublic;
+
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<UserResponseDTO>(user);
+        }
+
+
+        public async Task<bool> DeleteUser(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return false;
+
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return true;

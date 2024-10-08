@@ -1,9 +1,10 @@
 ﻿using Azure.Core;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlannerAPI.Models;
-using StudyPlannerAPI.Models.DTO;
+using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Services.UserServices;
 using System.Security.Claims;
 
@@ -16,11 +17,13 @@ namespace StudyPlannerAPI.Controllers
         private readonly IUserService _userService;
         private IValidator<UserRegistrationDTO> _registerValidator;
         private IValidator<UserLoginDTO> _loginValidator;
-        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator)
+        private IValidator<UserUpdateDTO> _updateValidator;
+        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator, IValidator<UserUpdateDTO> updateValidator)
         {
             _userService = userService;
             _registerValidator = registerValidator;
             _loginValidator = loginValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpPost("register")]
@@ -114,6 +117,7 @@ namespace StudyPlannerAPI.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             // Get the refresh token from the cookie
@@ -137,5 +141,37 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok("Logged out successfully.");
         }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDTO userUpdateDTO)
+        {
+            var validationResult = await _updateValidator.ValidateAsync(userUpdateDTO);
+
+            if (validationResult.IsValid)
+            {
+                var updatedUser = await _userService.UpdateUser(id, userUpdateDTO);
+
+                if (updatedUser == null)
+                    return NotFound("User not found");
+
+                return Ok(updatedUser);
+            }
+
+            return BadRequest(validationResult.Errors);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _userService.DeleteUser(id);
+
+            if (!deleted)
+                return NotFound("User not found");
+
+            return NoContent(); 
+        }
+
     }
 }

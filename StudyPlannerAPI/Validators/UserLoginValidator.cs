@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using StudyPlannerAPI.Models.DTO;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Validators
 {

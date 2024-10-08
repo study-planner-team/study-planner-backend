@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
-using StudyPlannerAPI.Models.DTO;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Validators
 {
-    public class UserValidator : AbstractValidator<UserRegistrationDTO>
+    public class UserRegistrationValidator : AbstractValidator<UserRegistrationDTO>
     {
-        public UserValidator()
+        public UserRegistrationValidator()
         {
             RuleFor(u => u.Username)
                 .NotEmpty()

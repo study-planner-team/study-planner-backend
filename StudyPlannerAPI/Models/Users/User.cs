@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace StudyPlannerAPI.Models
+namespace StudyPlannerAPI.Models.Users
 {
     public class User
     {
@@ -10,9 +10,11 @@ namespace StudyPlannerAPI.Models
 
         public required string Username { get; set; }
 
-        public required string PasswordHash { get; set; } 
+        public required string PasswordHash { get; set; }
 
         public required string Email { get; set; }
+
+        public required bool IsPublic { get; set; }
 
         public string? RefreshToken { get; set; }
 

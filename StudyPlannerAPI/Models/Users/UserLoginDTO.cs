@@ -1,4 +1,4 @@
-﻿namespace StudyPlannerAPI.Models.DTO
+﻿namespace StudyPlannerAPI.Models.Users
 {
     public class UserLoginDTO
     {
