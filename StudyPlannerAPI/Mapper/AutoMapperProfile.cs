@@ -1,6 +1,5 @@
-﻿using StudyPlannerAPI.Models.DTO;
-using StudyPlannerAPI.Models;
-using AutoMapper;
+﻿using AutoMapper;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Mapper
 {
@@ -9,7 +8,14 @@ namespace StudyPlannerAPI.Mapper
         public AutoMapperProfile()
         {
             CreateMap<UserRegistrationDTO, User>()
-               .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)));
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)))
+                .ForMember(dest => dest.IsPublic, opt => opt.MapFrom(src => false));
+
+            CreateMap<User, UserResponseDTO>();
+
+            CreateMap<UserUpdateDTO, User>();
         }
+
+
     }
 }

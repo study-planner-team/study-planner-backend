@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using StudyPlannerAPI.Models;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Data
 {

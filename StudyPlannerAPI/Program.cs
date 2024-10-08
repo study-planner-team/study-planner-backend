@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
-using StudyPlannerAPI.Models.DTO;
+using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Services.UserServices;
 using StudyPlannerAPI.Validators;
 using System.Text;
@@ -45,9 +45,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddAutoMapper(typeof(Program));
 
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserValidator>();
+
+// Validators
+builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();
 builder.Services.AddScoped<IValidator<UserLoginDTO>, UserLoginValidator>();
+builder.Services.AddScoped<IValidator<UserUpdateDTO>, UserUpdateValidator>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {
