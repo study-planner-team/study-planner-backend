@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Data
@@ -12,7 +13,8 @@ namespace StudyPlannerAPI.Data
         }
 
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<StudyPlan> StudyPlans { get; set; }
 
-    
+
     }
 }
