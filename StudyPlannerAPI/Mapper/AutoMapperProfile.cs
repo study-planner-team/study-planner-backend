@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Mapper
@@ -14,6 +15,11 @@ namespace StudyPlannerAPI.Mapper
             CreateMap<User, UserResponseDTO>();
 
             CreateMap<UserUpdateDTO, User>();
+
+            // StudyPlan
+            CreateMap<StudyPlanDTO, StudyPlan>();
+            CreateMap<StudyPlan, StudyPlanResponseDTO>()
+                .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.User));
         }
 
 
