@@ -51,12 +51,14 @@ builder.Services.AddAutoMapper(typeof(Program));
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudyPlanService, StudyPlanService>();
+builder.Services.AddScoped<IStudyTopicService, StudyTopicService>();
 
 // Validators
 builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();
 builder.Services.AddScoped<IValidator<UserLoginDTO>, UserLoginValidator>();
 builder.Services.AddScoped<IValidator<UserUpdateDTO>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<StudyPlanDTO>, StudyPlanValidator>();
+builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {

@@ -20,6 +20,9 @@ namespace StudyPlannerAPI.Mapper
             CreateMap<StudyPlanDTO, StudyPlan>();
             CreateMap<StudyPlan, StudyPlanResponseDTO>()
                 .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.User));
+
+            // StudyTopic
+            CreateMap<StudyTopicDTO, StudyTopic>();
         }
 
 
