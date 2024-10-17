@@ -14,6 +14,7 @@ namespace StudyPlannerAPI.Data
 
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<StudyPlan> StudyPlans { get; set; }
+        public virtual DbSet<StudyTopic> StudyTopics { get; set; }
 
 
     }
