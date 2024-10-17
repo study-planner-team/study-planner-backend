@@ -7,6 +7,7 @@ using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Services.StudyPlanServices;
+using StudyPlannerAPI.Services.StudySessionsServices;
 using StudyPlannerAPI.Services.UserServices;
 using StudyPlannerAPI.Validators;
 using StudyPlannerAPI.Validators.StudyPlanValidators;
@@ -52,6 +53,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudyPlanService, StudyPlanService>();
 builder.Services.AddScoped<IStudyTopicService, StudyTopicService>();
+builder.Services.AddScoped<IStudySessionService, StudySessionService>();
 
 // Validators
 builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();

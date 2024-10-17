@@ -1,0 +1,18 @@
+﻿using StudyPlannerAPI.Models.StudyPlans;
+
+namespace StudyPlannerAPI.Models.StudySessions
+{
+    public class StudySessionDTO
+    {
+        public required int StudyPlanId { get; set; }
+        public required DateTime StartDate { get; set; }
+        public required DateTime EndDate { get; set; }
+        public required int SessionsPerDay { get; set; }
+        public required int SessionLength { get; set; }
+        public required TimeSpan StudyStartTime { get; set; }
+        public required TimeSpan StudyEndTime { get; set; }
+        public required List<string> PreferredStudyDays { get; set; }
+        public required List<StudyTopicDTO> Topics { get; set; }
+        public int UserId { get; set; }
+    }
+}
