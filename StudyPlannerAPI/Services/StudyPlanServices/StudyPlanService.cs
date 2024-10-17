@@ -74,5 +74,38 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
             return _mapper.Map<StudyPlanResponseDTO>(studyPlan);
         }
+        public async Task<StudyPlanResponseDTO> ArchiveStudyPlan(int planId)
+        {
+            var studyPlan = await _context.StudyPlans.FindAsync(planId);
+
+            if (studyPlan == null)
+                return null;
+
+            studyPlan.IsArchived = true;
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<StudyPlanResponseDTO>(studyPlan);
+        }
+        public async Task<StudyPlanResponseDTO?> UnarchiveStudyPlan(int planId)
+        {
+            var studyPlan = await _context.StudyPlans.FindAsync(planId);
+
+            if (studyPlan == null)
+                return null;
+
+            studyPlan.IsArchived = false;
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<StudyPlanResponseDTO>(studyPlan);
+        }
+
+        public async Task<IEnumerable<StudyPlanResponseDTO>> GetArchivedStudyPlansForUser(int userId)
+        {
+            var archivedPlans = await _context.StudyPlans
+                .Where(sp => sp.UserId == userId && sp.IsArchived)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(archivedPlans);
+        }
     }
 }

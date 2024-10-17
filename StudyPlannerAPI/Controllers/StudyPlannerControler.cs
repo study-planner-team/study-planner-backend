@@ -85,5 +85,36 @@ namespace StudyPlannerAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpPut("{id}/archive")]
+        public async Task<IActionResult> ArchiveStudyPlan(int id)
+        {
+            var archivedPlan = await _studyPlanService.ArchiveStudyPlan(id);
+
+            if (archivedPlan == null)
+                return NotFound("Study plan not found.");
+
+            return Ok(archivedPlan);
+        }
+
+        [HttpPut("{id}/unarchive")]
+        public async Task<IActionResult> UnarchiveStudyPlan(int id)
+        {
+            var unarchivedPlan = await _studyPlanService.UnarchiveStudyPlan(id);
+
+            if (unarchivedPlan == null)
+                return NotFound("Study plan not found.");
+
+            return Ok(unarchivedPlan);
+        }
+
+        [HttpGet("archived")]
+        public async Task<IActionResult> GetArchivedStudyPlansForUser()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var archivedPlans = await _studyPlanService.GetArchivedStudyPlansForUser(userId);
+
+            return Ok(archivedPlans);
+        }
     }
 }
