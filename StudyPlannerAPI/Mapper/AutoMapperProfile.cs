@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Mapper
@@ -23,6 +24,9 @@ namespace StudyPlannerAPI.Mapper
 
             // StudyTopic
             CreateMap<StudyTopicDTO, StudyTopic>();
+
+            // StudySession
+            CreateMap<StudySessionDTO, StudySession>();
         }
 
 

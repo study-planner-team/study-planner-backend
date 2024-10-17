@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StudyPlannerAPI.Models.StudySessions;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudyPlannerAPI.Models.Users
@@ -19,5 +20,7 @@ namespace StudyPlannerAPI.Models.Users
         public string? RefreshToken { get; set; }
 
         public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        public ICollection<StudySession> StudySessions { get; set; }
     }
 }
