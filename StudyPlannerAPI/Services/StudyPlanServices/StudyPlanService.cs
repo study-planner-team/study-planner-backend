@@ -115,5 +115,44 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
             return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
         }
+
+        public async Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId)
+        {
+            // Check if the study plan is public
+            var studyPlan = await _context.StudyPlans.FirstOrDefaultAsync(sp => sp.StudyPlanId == studyPlanId && sp.IsPublic);
+
+            if (studyPlan == null)
+                return false; // Study plan not found or is not public
+
+            // Check if the user is already a member
+            var existingMembership = await _context.StudyPlanMembers
+                .FirstOrDefaultAsync(m => m.UserId == userId && m.StudyPlanId == studyPlanId);
+
+            if (existingMembership != null)
+                return false; // User is already a member
+
+            // Create a new membership
+            var membership = new StudyPlanMembers
+            {
+                UserId = userId,
+                StudyPlanId = studyPlanId
+            };
+
+            _context.StudyPlanMembers.Add(membership);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<IEnumerable<UserResponseDTO>> GetStudyPlanMembers(int studyPlanId)
+        {
+            var members = await _context.StudyPlanMembers
+                .Where(m => m.StudyPlanId == studyPlanId)
+                .Select(m => m.User) // Get the User entity from StudyPlanMembership
+                .ToListAsync();
+
+            // Use AutoMapper to map the list of Users to StudyPlanMemberDTOs
+            return _mapper.Map<List<UserResponseDTO>>(members);
+        }
     }
 }

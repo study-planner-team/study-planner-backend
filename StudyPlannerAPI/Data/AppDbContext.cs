@@ -17,6 +17,7 @@ namespace StudyPlannerAPI.Data
         public virtual DbSet<StudyPlan> StudyPlans { get; set; }
         public virtual DbSet<StudyTopic> StudyTopics { get; set; }
         public virtual DbSet<StudySession> StudySessions { get; set; }
+        public virtual DbSet<StudyPlanMembers> StudyPlanMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,7 +31,25 @@ namespace StudyPlannerAPI.Data
                 .HasOne(ss => ss.User)
                 .WithMany(u => u.StudySessions)  
                 .HasForeignKey(ss => ss.UserId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<StudyPlan>()
+                .HasOne(sp => sp.User)
+                .WithMany()
+                .HasForeignKey(sp => sp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StudyPlanMembers>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<StudyPlanMembers>()
+                .HasOne(m => m.StudyPlan)
+                .WithMany()
+                .HasForeignKey(m => m.StudyPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

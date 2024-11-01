@@ -124,5 +124,27 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok(publicPlans);
         }
+
+        [HttpPost("{studyPlanId}/join")]
+        public async Task<IActionResult> JoinPublicStudyPlan(int studyPlanId)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var success = await _studyPlanService.JoinPublicStudyPlan(userId, studyPlanId);
+
+            if (!success)
+            {
+                return BadRequest("Could not join the study plan. It may already be joined or is not public.");
+            }
+
+            return Ok("Successfully joined the study plan.");
+        }
+
+        [HttpGet("{studyPlanId}/members")]
+        public async Task<IActionResult> GetStudyPlanMembers(int studyPlanId)
+        {
+            var members = await _studyPlanService.GetStudyPlanMembers(studyPlanId);
+            return Ok(members);
+        }
     }
 }

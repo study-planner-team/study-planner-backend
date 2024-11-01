@@ -1,4 +1,5 @@
 ﻿using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Services.StudyPlanServices
 {
@@ -13,5 +14,7 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         public Task<StudyPlanResponseDTO?> UnarchiveStudyPlan(int planId);
         public Task<IEnumerable<StudyPlanResponseDTO>> GetArchivedStudyPlansForUser(int userId);
         public Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans();
+        public Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId);
+        public Task<IEnumerable<UserResponseDTO>> GetStudyPlanMembers(int studyPlanId);
     }
 }

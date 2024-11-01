@@ -1,4 +1,5 @@
-﻿using StudyPlannerAPI.Models.StudySessions;
+﻿using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.StudySessions;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
