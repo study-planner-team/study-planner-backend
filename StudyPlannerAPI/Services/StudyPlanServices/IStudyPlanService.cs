@@ -12,5 +12,6 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         public Task<StudyPlanResponseDTO> ArchiveStudyPlan(int planId);
         public Task<StudyPlanResponseDTO?> UnarchiveStudyPlan(int planId);
         public Task<IEnumerable<StudyPlanResponseDTO>> GetArchivedStudyPlansForUser(int userId);
+        public Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans();
     }
 }

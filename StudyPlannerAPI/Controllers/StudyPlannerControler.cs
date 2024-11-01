@@ -116,5 +116,13 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok(archivedPlans);
         }
+
+        [HttpGet("public")]
+        public async Task<IActionResult> GetPublicStudyPlans()
+        {
+            var publicPlans = await _studyPlanService.GetPublicStudyPlans();
+
+            return Ok(publicPlans);
+        }
     }
 }
