@@ -161,5 +161,20 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok("Successfully left the study plan.");
         }
+
+        [HttpPost("{studyPlanId}/change-owner")]
+        public async Task<IActionResult> ChangeOwner(int studyPlanId, [FromBody] int newOwnerId)
+        {
+            var currentOwnerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var result = await _studyPlanService.ChangeStudyPlanOwner(currentOwnerId, studyPlanId, newOwnerId);
+
+            if (!result)
+            {
+                return BadRequest("Failed to change owner.");
+            }
+
+            return Ok("Ownership has been updated.");
+        }
     }
 }

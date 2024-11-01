@@ -21,6 +21,16 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
             var studyPlan = _mapper.Map<StudyPlan>(studyPlanDTO);
             studyPlan.UserId = userId;
 
+            // Add the creator as a member of this study plan
+            var member = new StudyPlanMembers
+            {
+                UserId = userId,
+                StudyPlan = studyPlan,
+                JoinedDate = DateTime.UtcNow
+            };
+
+            _context.StudyPlanMembers.Add(member);
+
             _context.StudyPlans.Add(studyPlan);
             await _context.SaveChangesAsync();
 
@@ -169,5 +179,28 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
             return true;
         }
 
+        public async Task<bool> ChangeStudyPlanOwner(int currentOwnerId, int studyPlanId, int newOwnerId)
+        {
+            var studyPlan = await _context.StudyPlans.FirstOrDefaultAsync(sp => sp.StudyPlanId == studyPlanId && sp.UserId == currentOwnerId);
+
+            if (studyPlan == null)
+            {
+                return false;
+            }
+
+            // Check if the new owner is a member of the study plan
+            bool isMember = await _context.StudyPlanMembers.AnyAsync(spm => spm.StudyPlanId == studyPlanId && spm.UserId == newOwnerId);
+
+            if (!isMember)
+            {
+                return false; // New owner must be a member of the study plan
+            }
+
+            // Update the owner
+            studyPlan.UserId = newOwnerId;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
