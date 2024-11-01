@@ -95,7 +95,6 @@ namespace StudyPlannerAPI.Services.UserServices
             user.RefreshToken = null;
             user.RefreshTokenExpiryTime = null;
 
-            // Save changes to the database
             await _context.SaveChangesAsync();
 
             return true;

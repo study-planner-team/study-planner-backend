@@ -96,7 +96,7 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("accessToken", newAccessToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false, // Wymaga HTTPS
+                    Secure = false,
                     SameSite = SameSiteMode.Unspecified,
                     Expires = DateTime.UtcNow.AddMinutes(25)
                 });
@@ -105,7 +105,7 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false, // Wymaga HTTPS
+                    Secure = false,
                     SameSite = SameSiteMode.Unspecified,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Services.StudyPlanServices;
 using StudyPlannerAPI.Services.StudySessionsServices;
@@ -61,6 +62,7 @@ builder.Services.AddScoped<IValidator<UserLoginDTO>, UserLoginValidator>();
 builder.Services.AddScoped<IValidator<UserUpdateDTO>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<StudyPlanDTO>, StudyPlanValidator>();
 builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
+builder.Services.AddScoped<IValidator<StudySessionDTO>, StudySessionValidator>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {
