@@ -148,11 +148,26 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         {
             var members = await _context.StudyPlanMembers
                 .Where(m => m.StudyPlanId == studyPlanId)
-                .Select(m => m.User) // Get the User entity from StudyPlanMembership
+                .Select(m => m.User) // Get the User entity from StudyPlanMembers
                 .ToListAsync();
 
-            // Use AutoMapper to map the list of Users to StudyPlanMemberDTOs
             return _mapper.Map<List<UserResponseDTO>>(members);
         }
+
+        public async Task<bool> LeavePublicStudyPlan(int userId, int studyPlanId)
+        {
+            var member = await _context.StudyPlanMembers.FirstOrDefaultAsync(m => m.UserId == userId && m.StudyPlanId == studyPlanId);
+
+            if (member == null)
+            {
+                return false; 
+            }
+
+            _context.StudyPlanMembers.Remove(member);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

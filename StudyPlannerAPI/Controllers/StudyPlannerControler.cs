@@ -134,7 +134,7 @@ namespace StudyPlannerAPI.Controllers
 
             if (!success)
             {
-                return BadRequest("Could not join the study plan. It may already be joined or is not public.");
+                return BadRequest("Could not join the study plan. User might already be a member or the plan is not public.");
             }
 
             return Ok("Successfully joined the study plan.");
@@ -145,6 +145,21 @@ namespace StudyPlannerAPI.Controllers
         {
             var members = await _studyPlanService.GetStudyPlanMembers(studyPlanId);
             return Ok(members);
+        }
+
+        [HttpPost("{studyPlanId}/leave")]
+        public async Task<IActionResult> LeavePublicStudyPlan(int studyPlanId)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var result = await _studyPlanService.LeavePublicStudyPlan(userId, studyPlanId);
+
+            if (!result)
+            {
+                return NotFound("User is not a member of this study plan or the study plan does not exist.");
+            }
+
+            return Ok("Successfully left the study plan.");
         }
     }
 }
