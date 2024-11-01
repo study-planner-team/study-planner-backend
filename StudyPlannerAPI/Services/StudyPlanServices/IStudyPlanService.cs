@@ -16,5 +16,6 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         public Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans();
         public Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId);
         public Task<IEnumerable<UserResponseDTO>> GetStudyPlanMembers(int studyPlanId);
+        public Task<bool> LeavePublicStudyPlan(int userId, int studyPlanId);
     }
 }
