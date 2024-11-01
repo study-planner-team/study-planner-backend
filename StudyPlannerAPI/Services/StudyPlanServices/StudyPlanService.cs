@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Services.StudyPlanServices
 {
@@ -106,6 +107,13 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(archivedPlans);
+        }
+
+        public async Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans()
+        {
+            var studyPlans = await _context.StudyPlans.Include(sp => sp.User).Where(sp => sp.IsPublic == true).ToListAsync();
+
+            return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
         }
     }
 }
