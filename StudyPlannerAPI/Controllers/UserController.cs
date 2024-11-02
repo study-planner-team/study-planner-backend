@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -173,5 +174,52 @@ namespace StudyPlannerAPI.Controllers
             return NoContent(); 
         }
 
+        // Endpoint to initiate Google sign-in
+        [HttpGet("signin-google")]
+        public IActionResult SignInWithGoogle()
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleCallback")
+            };
+
+            return Challenge(properties, "Google");
+        }
+
+        // Endpoint to handle the Google OAuth callback
+        [HttpGet("google/callback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            // Authenticate the Google user
+            var result = await HttpContext.AuthenticateAsync("Google");
+            if (!result.Succeeded)
+            {
+                return Unauthorized();
+            }
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+
+            // Find or create the user in your database and return tokens
+            var (accessToken, refreshToken, user) = await _userService.HandleGoogleUser(email, name);
+
+            Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddMinutes(25)
+            });
+
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, // Wymaga HTTPS
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(user);
+        }
     }
 }
