@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
+using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Data
@@ -18,6 +19,7 @@ namespace StudyPlannerAPI.Data
         public virtual DbSet<StudyTopic> StudyTopics { get; set; }
         public virtual DbSet<StudySession> StudySessions { get; set; }
         public virtual DbSet<StudyPlanMembers> StudyPlanMembers { get; set; }
+        public virtual DbSet<StudyMaterial> StudyMaterials { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
