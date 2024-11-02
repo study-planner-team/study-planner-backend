@@ -166,5 +166,43 @@ namespace StudyPlannerAPI.Services.UserServices
             return Convert.ToBase64String(randomNumber);
         }
 
+        public async Task<(string?, string?, UserResponseDTO?)> HandleGoogleUser(string email, string name)
+        {
+            var user = await FindOrCreateUserByGoogleAsync(email, name);
+
+            var accessToken = CreateToken(user, 25);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            var userResponse = _mapper.Map<UserResponseDTO>(user);
+
+            return (accessToken, refreshToken, userResponse);
+
+        }
+
+        public async Task<User> FindOrCreateUserByGoogleAsync(string email, string name)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Username = name,
+                    Email = email,
+                    IsPublic = true,
+                    IsGoogleUser = true
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            return user;
+        }
+
     }
 }

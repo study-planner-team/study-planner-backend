@@ -8,15 +8,17 @@ namespace StudyPlannerAPI.Models.Users
     public class User
     {
         [Key]
-        public required int UserId { get; set; }
+        public int UserId { get; set; }
 
         public required string Username { get; set; }
 
-        public required string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; } // Empty for Google users
 
         public required string Email { get; set; }
 
         public required bool IsPublic { get; set; }
+
+        public bool IsGoogleUser { get; set; } = false;
 
         public string? RefreshToken { get; set; }
 

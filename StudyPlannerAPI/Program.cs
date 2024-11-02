@@ -1,5 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +18,7 @@ using StudyPlannerAPI.Validators;
 using StudyPlannerAPI.Validators.StudyMaterialValidators;
 using StudyPlannerAPI.Validators.StudyPlanValidators;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,7 +72,16 @@ builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
 builder.Services.AddScoped<IValidator<StudySessionDTO>, StudySessionValidator>();
 builder.Services.AddScoped<IValidator<StudyMaterialDTO>, StudyMaterialDTOValidator>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+    // Set cookies for Google OAuth sign-in
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultScheme = "Cookies";
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, x =>
 {
     x.TokenValidationParameters = new TokenValidationParameters
     {
@@ -81,7 +93,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
-
 
     // Custom token retrieval from cookies
     x.Events = new JwtBearerEvents
@@ -100,7 +111,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             return Task.CompletedTask;
         }
     };
-
+})
+.AddCookie("Cookies")
+.AddGoogle("Google", options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
 
 var app = builder.Build();
