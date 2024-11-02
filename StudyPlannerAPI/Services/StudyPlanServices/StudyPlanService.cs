@@ -156,12 +156,10 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
         public async Task<IEnumerable<UserResponseDTO>> GetStudyPlanMembers(int studyPlanId)
         {
-            var members = await _context.StudyPlanMembers
-                .Where(m => m.StudyPlanId == studyPlanId)
-                .Select(m => m.User) // Get the User entity from StudyPlanMembers
-                .ToListAsync();
+            // Get the Users from StudyPlanMembers
+            var members = await _context.StudyPlanMembers.Where(m => m.StudyPlanId == studyPlanId).Select(m => m.User).ToListAsync(); 
 
-            return _mapper.Map<List<UserResponseDTO>>(members);
+            return _mapper.Map<IEnumerable<UserResponseDTO>>(members);
         }
 
         public async Task<bool> LeavePublicStudyPlan(int userId, int studyPlanId)

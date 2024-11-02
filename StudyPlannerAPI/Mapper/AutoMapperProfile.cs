@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.Users;
@@ -9,12 +10,11 @@ namespace StudyPlannerAPI.Mapper
     {
         public AutoMapperProfile()
         {
+            // User
             CreateMap<UserRegistrationDTO, User>()
                 .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)))
                 .ForMember(dest => dest.IsPublic, opt => opt.MapFrom(src => false));
-
             CreateMap<User, UserResponseDTO>();
-
             CreateMap<UserUpdateDTO, User>();
 
             // StudyPlan
@@ -27,8 +27,11 @@ namespace StudyPlannerAPI.Mapper
 
             // StudySession
             CreateMap<StudySessionDTO, StudySession>();
+
+            // StudyMaterial
+            CreateMap<StudyMaterialDTO, StudyMaterial>();
+            CreateMap<StudyMaterial, StudyMaterialResponseDTO>();
+
         }
-
-
     }
 }

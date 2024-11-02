@@ -4,13 +4,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.Users;
+using StudyPlannerAPI.Services.StudyMaterialServices;
 using StudyPlannerAPI.Services.StudyPlanServices;
 using StudyPlannerAPI.Services.StudySessionsServices;
 using StudyPlannerAPI.Services.UserServices;
 using StudyPlannerAPI.Validators;
+using StudyPlannerAPI.Validators.StudyMaterialValidators;
 using StudyPlannerAPI.Validators.StudyPlanValidators;
 using System.Text;
 
@@ -55,6 +58,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudyPlanService, StudyPlanService>();
 builder.Services.AddScoped<IStudyTopicService, StudyTopicService>();
 builder.Services.AddScoped<IStudySessionService, StudySessionService>();
+builder.Services.AddScoped<IStudyMaterialService, StudyMaterialService>();
 
 // Validators
 builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();
@@ -63,6 +67,7 @@ builder.Services.AddScoped<IValidator<UserUpdateDTO>, UserUpdateValidator>();
 builder.Services.AddScoped<IValidator<StudyPlanDTO>, StudyPlanValidator>();
 builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
 builder.Services.AddScoped<IValidator<StudySessionDTO>, StudySessionValidator>();
+builder.Services.AddScoped<IValidator<StudyMaterialDTO>, StudyMaterialDTOValidator>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {
