@@ -13,10 +13,11 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         public Task<StudyPlanResponseDTO> ArchiveStudyPlan(int planId);
         public Task<StudyPlanResponseDTO?> UnarchiveStudyPlan(int planId);
         public Task<IEnumerable<StudyPlanResponseDTO>> GetArchivedStudyPlansForUser(int userId);
-        public Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans();
+        public Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans(int userId);
         public Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId);
         public Task<IEnumerable<UserResponseDTO>> GetStudyPlanMembers(int studyPlanId);
         public Task<bool> LeavePublicStudyPlan(int userId, int studyPlanId);
         public Task<bool> ChangeStudyPlanOwner(int currentOwnerId, int studyPlanId, int newOwnerId);
+        public Task<IEnumerable<StudyPlanResponseDTO>> GetJoinedStudyPlansForUser(int userId);
     }
 }

@@ -120,10 +120,21 @@ namespace StudyPlannerAPI.Controllers
         [HttpGet("public")]
         public async Task<IActionResult> GetPublicStudyPlans()
         {
-            var publicPlans = await _studyPlanService.GetPublicStudyPlans();
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var publicPlans = await _studyPlanService.GetPublicStudyPlans(userId);
 
             return Ok(publicPlans);
         }
+
+        [HttpGet("joined")]
+        public async Task<IActionResult> GetJoinedStudyPlansForUser()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var joinedPlans = await _studyPlanService.GetJoinedStudyPlansForUser(userId);
+
+            return Ok(joinedPlans);
+        }
+
 
         [HttpPost("{studyPlanId}/join")]
         public async Task<IActionResult> JoinPublicStudyPlan(int studyPlanId)

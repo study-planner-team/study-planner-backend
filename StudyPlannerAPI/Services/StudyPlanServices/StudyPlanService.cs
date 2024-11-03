@@ -119,11 +119,27 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
             return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(archivedPlans);
         }
 
-        public async Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans()
+        public async Task<IEnumerable<StudyPlanResponseDTO>> GetPublicStudyPlans(int userId)
         {
-            var studyPlans = await _context.StudyPlans.Include(sp => sp.User).Where(sp => sp.IsPublic == true).ToListAsync();
+            var studyPlans = await _context.StudyPlans
+                .Include(sp => sp.User)
+                .Where(sp => sp.IsPublic == true && sp.UserId != userId) // Exclude plans where the user is the owner
+                .Where(sp => !_context.StudyPlanMembers
+                    .Any(m => m.StudyPlanId == sp.StudyPlanId && m.UserId == userId)) // Exclude plans where the user is a member
+                .ToListAsync();
 
             return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
+        }
+
+        public async Task<IEnumerable<StudyPlanResponseDTO>> GetJoinedStudyPlansForUser(int userId)
+        {
+            var joinedPlans = await _context.StudyPlans
+                .Where(sp => _context.StudyPlanMembers
+                    .Any(m => m.StudyPlanId == sp.StudyPlanId && m.UserId == userId) // User is a member
+                    && sp.UserId != userId) // Exclude plans where the user is the owner
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(joinedPlans);
         }
 
         public async Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId)
