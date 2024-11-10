@@ -12,11 +12,14 @@ using StudyPlannerAPI.Services.StudyMaterialServices;
 using StudyPlannerAPI.Services.StudyPlanServices;
 using StudyPlannerAPI.Services.StudySessionsServices;
 using StudyPlannerAPI.Services.UserServices;
-using StudyPlannerAPI.Validators;
 using StudyPlannerAPI.Validators.StudyMaterialValidators;
 using StudyPlannerAPI.Validators.StudyPlanValidators;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using StudyPlannerAPI.Models.StudyTopics;
+using StudyPlannerAPI.Services.StudyTopicServices;
+using StudyPlannerAPI.Validators.UserValidators;
+using StudyPlannerAPI.Validators.StudySessionValidators;
 
 
 var builder = WebApplication.CreateBuilder(args);

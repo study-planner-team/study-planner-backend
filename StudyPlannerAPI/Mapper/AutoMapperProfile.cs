@@ -2,6 +2,7 @@
 using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
+using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Mapper

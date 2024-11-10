@@ -1,4 +1,4 @@
-﻿namespace StudyPlannerAPI.Models.StudyPlans
+﻿namespace StudyPlannerAPI.Models.StudyTopics
 {
     public class StudyTopicDTO
     {

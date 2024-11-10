@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using StudyPlannerAPI.Models.StudyPlans;
 
-namespace StudyPlannerAPI.Models.StudyPlans
+namespace StudyPlannerAPI.Models.StudyTopics
 {
     public class StudyTopic
     {

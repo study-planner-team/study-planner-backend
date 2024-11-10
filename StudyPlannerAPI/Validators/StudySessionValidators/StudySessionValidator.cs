@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using StudyPlannerAPI.Models.StudySessions;
-using StudyPlannerAPI.Validators.StudyPlanValidators;
 
-namespace StudyPlannerAPI.Validators
+namespace StudyPlannerAPI.Validators.StudySessionValidators
 {
     public class StudySessionValidator : AbstractValidator<StudySessionDTO>
     {

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
-using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.StudyTopics;
 
-namespace StudyPlannerAPI.Services.StudyPlanServices
+namespace StudyPlannerAPI.Services.StudyTopicServices
 {
     public class StudyTopicService : IStudyTopicService
     {

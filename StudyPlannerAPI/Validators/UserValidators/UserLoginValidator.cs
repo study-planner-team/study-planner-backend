@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using StudyPlannerAPI.Models.Users;
 
-namespace StudyPlannerAPI.Validators
+namespace StudyPlannerAPI.Validators.UserValidators
 {
     public class UserLoginValidator : AbstractValidator<UserLoginDTO>
     {

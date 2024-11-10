@@ -5,6 +5,7 @@ using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.Users;
+using StudyPlannerAPI.Models.StudyTopics;
 
 namespace StudyPlannerAPI.Data
 {

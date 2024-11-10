@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StudyPlannerAPI.Models.StudyPlans;
-using StudyPlannerAPI.Services.StudyPlanServices;
+using StudyPlannerAPI.Models.StudyTopics;
+using StudyPlannerAPI.Services.StudyTopicServices;
 
 namespace StudyPlannerAPI.Controllers
 {

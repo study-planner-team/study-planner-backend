@@ -1,6 +1,6 @@
-﻿using StudyPlannerAPI.Models.StudyPlans;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using StudyPlannerAPI.Models.StudyTopics;
 
 namespace StudyPlannerAPI.Models.StudyMaterials
 {

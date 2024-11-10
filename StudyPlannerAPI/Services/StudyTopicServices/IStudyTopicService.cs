@@ -1,6 +1,6 @@
-﻿using StudyPlannerAPI.Models.StudyPlans;
+﻿using StudyPlannerAPI.Models.StudyTopics;
 
-namespace StudyPlannerAPI.Services.StudyPlanServices
+namespace StudyPlannerAPI.Services.StudyTopicServices
 {
     public interface IStudyTopicService
     {
