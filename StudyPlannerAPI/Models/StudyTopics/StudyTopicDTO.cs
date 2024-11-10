@@ -1,4 +1,6 @@
-﻿namespace StudyPlannerAPI.Models.StudyTopics
+﻿using StudyPlannerAPI.Models.StudyMaterials;
+
+namespace StudyPlannerAPI.Models.StudyTopics
 {
     public class StudyTopicDTO
     {

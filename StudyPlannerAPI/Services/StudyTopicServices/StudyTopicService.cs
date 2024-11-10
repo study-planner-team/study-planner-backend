@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyTopics;
 
 namespace StudyPlannerAPI.Services.StudyTopicServices
@@ -16,9 +17,16 @@ namespace StudyPlannerAPI.Services.StudyTopicServices
             _mapper = mapper;
         }
 
-        public async Task<List<StudyTopic>> GetTopicsForStudyPlan(int studyPlanId)
+        public async Task<List<StudyTopicResponseDTO>> GetTopicsForStudyPlan(int studyPlanId)
         {
-            return await _context.StudyTopics.Where(st => st.StudyPlanId == studyPlanId).ToListAsync();
+            var studyTopics = await _context.StudyTopics
+                .Where(st => st.StudyPlanId == studyPlanId)
+                .Include(st => st.StudyMaterials) // Include related StudyMaterials
+                .ToListAsync();
+
+            var studyTopicDTOs = _mapper.Map<List<StudyTopicResponseDTO>>(studyTopics);
+
+            return studyTopicDTOs;
         }
 
         public async Task<StudyTopic> AddTopicToStudyPlan(int studyPlanId, StudyTopicDTO topicDTO)

@@ -25,6 +25,8 @@ namespace StudyPlannerAPI.Mapper
 
             // StudyTopic
             CreateMap<StudyTopicDTO, StudyTopic>();
+            CreateMap<StudyTopic, StudyTopicResponseDTO>()
+            .ForMember(dest => dest.StudyMaterials, opt => opt.MapFrom(src => src.StudyMaterials));
 
             // StudySession
             CreateMap<StudySessionDTO, StudySession>();

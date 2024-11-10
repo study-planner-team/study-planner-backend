@@ -4,7 +4,7 @@ namespace StudyPlannerAPI.Services.StudyTopicServices
 {
     public interface IStudyTopicService
     {
-        public Task<List<StudyTopic>> GetTopicsForStudyPlan(int studyPlanId);
+        public Task<List<StudyTopicResponseDTO>> GetTopicsForStudyPlan(int studyPlanId);
         public Task<StudyTopic> AddTopicToStudyPlan(int studyPlanId, StudyTopicDTO topicDTO);
     }
 }

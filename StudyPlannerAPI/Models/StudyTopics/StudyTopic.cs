@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyPlans;
 
 namespace StudyPlannerAPI.Models.StudyTopics
@@ -11,5 +12,6 @@ namespace StudyPlannerAPI.Models.StudyTopics
         public required double Hours { get; set; }
         public int StudyPlanId { get; set; }
         public StudyPlan StudyPlan { get; set; }
+        public virtual ICollection<StudyMaterial> StudyMaterials { get; set; }
     }
 }
