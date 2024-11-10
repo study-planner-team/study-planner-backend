@@ -1,7 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -68,7 +66,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000") // Your frontend URL
+            builder.WithOrigins("http://localhost:3000") // Frontend URL
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials(); 
@@ -102,9 +100,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-    // Set cookies for Google OAuth sign-in
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultScheme = "Cookies";
 })
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, x =>
 {
@@ -136,12 +131,6 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-})
-.AddCookie("Cookies")
-.AddGoogle("Google", options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
 
 var app = builder.Build();

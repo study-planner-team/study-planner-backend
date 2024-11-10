@@ -1,13 +1,19 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StudyPlannerAPI.Models;
 using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Services.UserServices;
 using System.Security.Claims;
+
+using Google.Apis.Auth;
+
 
 namespace StudyPlannerAPI.Controllers
 {
@@ -174,52 +180,44 @@ namespace StudyPlannerAPI.Controllers
             return NoContent(); 
         }
 
-        // Endpoint to initiate Google sign-in
-        [HttpGet("signin-google")]
-        public IActionResult SignInWithGoogle()
+        [HttpPost("exchange-google-code")]
+        public async Task<IActionResult> ExchangeGoogleCode([FromBody] string jwtToken)
         {
-            var properties = new AuthenticationProperties
+            try
             {
-                RedirectUri = Url.Action("GoogleCallback")
-            };
+                // Verify the JWT token using Google's public keys
+                var payload = await GoogleJsonWebSignature.ValidateAsync(jwtToken);
 
-            return Challenge(properties, "Google");
-        }
+                // Extract the user's email and name from the payload
+                var email = payload.Email;
+                var name = payload.Name;
 
-        // Endpoint to handle the Google OAuth callback
-        [HttpGet("google/callback")]
-        public async Task<IActionResult> GoogleCallback()
-        {
-            // Authenticate the Google user
-            var result = await HttpContext.AuthenticateAsync("Google");
-            if (!result.Succeeded)
-            {
-                return Unauthorized();
+                // Authenticate or create the user in the database
+                var (accessToken, refreshToken, user) = await _userService.HandleGoogleUser(email, name);
+
+                Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Unspecified,
+                    Expires = DateTime.UtcNow.AddMinutes(25)
+                });
+
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Unspecified,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                });
+
+                return Ok(user);
             }
-
-            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
-            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
-
-            // Find or create the user in your database and return tokens
-            var (accessToken, refreshToken, user) = await _userService.HandleGoogleUser(email, name);
-
-            Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            catch (Exception ex)
             {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddMinutes(25)
-            });
-
-            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // Wymaga HTTPS
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
-
-            return Ok(user);
+                return BadRequest("Failed to authenticate with Google: " + ex.Message);
+            }
         }
+
     }
 }
