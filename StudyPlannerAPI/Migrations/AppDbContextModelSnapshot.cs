@@ -45,7 +45,7 @@ namespace StudyPlannerAPI.Migrations
 
                     b.HasIndex("StudyTopicId");
 
-                    b.ToTable("StudyMaterials");
+                    b.ToTable("StudyMaterials", (string)null);
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyPlans.StudyPlan", b =>
@@ -85,7 +85,7 @@ namespace StudyPlannerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StudyPlans");
+                    b.ToTable("StudyPlans", (string)null);
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyPlans.StudyPlanMembers", b =>
@@ -111,7 +111,32 @@ namespace StudyPlannerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StudyPlanMembers");
+                    b.ToTable("StudyPlanMembers", (string)null);
+                });
+
+            modelBuilder.Entity("StudyPlannerAPI.Models.StudyPlans.StudyTopic", b =>
+                {
+                    b.Property<int>("TopicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TopicId"));
+
+                    b.Property<double>("Hours")
+                        .HasColumnType("float");
+
+                    b.Property<int>("StudyPlanId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TopicId");
+
+                    b.HasIndex("StudyPlanId");
+
+                    b.ToTable("StudyTopics", (string)null);
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudySessions.StudySession", b =>
@@ -150,32 +175,7 @@ namespace StudyPlannerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StudySessions");
-                });
-
-            modelBuilder.Entity("StudyPlannerAPI.Models.StudyTopics.StudyTopic", b =>
-                {
-                    b.Property<int>("TopicId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TopicId"));
-
-                    b.Property<double>("Hours")
-                        .HasColumnType("float");
-
-                    b.Property<int>("StudyPlanId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("TopicId");
-
-                    b.HasIndex("StudyPlanId");
-
-                    b.ToTable("StudyTopics");
+                    b.ToTable("StudySessions", (string)null);
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.Users.User", b =>
@@ -211,13 +211,13 @@ namespace StudyPlannerAPI.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyMaterials.StudyMaterial", b =>
                 {
-                    b.HasOne("StudyPlannerAPI.Models.StudyTopics.StudyTopic", "StudyTopic")
-                        .WithMany("StudyMaterials")
+                    b.HasOne("StudyPlannerAPI.Models.StudyPlans.StudyTopic", "StudyTopic")
+                        .WithMany()
                         .HasForeignKey("StudyTopicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -255,6 +255,17 @@ namespace StudyPlannerAPI.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StudyPlannerAPI.Models.StudyPlans.StudyTopic", b =>
+                {
+                    b.HasOne("StudyPlannerAPI.Models.StudyPlans.StudyPlan", "StudyPlan")
+                        .WithMany()
+                        .HasForeignKey("StudyPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StudyPlan");
+                });
+
             modelBuilder.Entity("StudyPlannerAPI.Models.StudySessions.StudySession", b =>
                 {
                     b.HasOne("StudyPlannerAPI.Models.StudyPlans.StudyPlan", "StudyPlan")
@@ -274,25 +285,9 @@ namespace StudyPlannerAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StudyPlannerAPI.Models.StudyTopics.StudyTopic", b =>
-                {
-                    b.HasOne("StudyPlannerAPI.Models.StudyPlans.StudyPlan", "StudyPlan")
-                        .WithMany()
-                        .HasForeignKey("StudyPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StudyPlan");
-                });
-
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyPlans.StudyPlan", b =>
                 {
                     b.Navigation("StudySessions");
-                });
-
-            modelBuilder.Entity("StudyPlannerAPI.Models.StudyTopics.StudyTopic", b =>
-                {
-                    b.Navigation("StudyMaterials");
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.Users.User", b =>

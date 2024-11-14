@@ -11,7 +11,7 @@ namespace StudyPlannerAPI.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options): base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
@@ -24,35 +24,61 @@ namespace StudyPlannerAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // StudySession configuration
             modelBuilder.Entity<StudySession>()
                 .HasOne(ss => ss.StudyPlan)
-                .WithMany(sp => sp.StudySessions)  
+                .WithMany(sp => sp.StudySessions)
                 .HasForeignKey(ss => ss.StudyPlanId)
-                .OnDelete(DeleteBehavior.Cascade);  
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete for sessions when the Study Plan is deleted
 
             modelBuilder.Entity<StudySession>()
                 .HasOne(ss => ss.User)
-                .WithMany(u => u.StudySessions)  
+                .WithMany(u => u.StudySessions)
                 .HasForeignKey(ss => ss.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to avoid deleting users when sessions are deleted
 
+            // StudyPlan configuration
             modelBuilder.Entity<StudyPlan>()
                 .HasOne(sp => sp.User)
-                .WithMany()
+                .WithMany() // No navigation property needed
                 .HasForeignKey(sp => sp.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Plans when the User is deleted
 
+            // StudyPlanMembers configuration
             modelBuilder.Entity<StudyPlanMembers>()
                 .HasOne(m => m.User)
-                .WithMany()
+                .WithMany() // No navigation property needed
                 .HasForeignKey(m => m.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction); // NoAction to avoid cascading issues when deleting users
 
             modelBuilder.Entity<StudyPlanMembers>()
                 .HasOne(m => m.StudyPlan)
-                .WithMany()
+                .WithMany() // No navigation property needed
                 .HasForeignKey(m => m.StudyPlanId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete StudyPlanMembers when the Study Plan is deleted
+
+            // StudyTopic configuration
+            modelBuilder.Entity<StudyTopic>()
+                .HasOne(st => st.StudyPlan)
+                .WithMany(sp => sp.StudyTopics)
+                .HasForeignKey(st => st.StudyPlanId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Topics when the Study Plan is deleted
+
+            // StudyMaterial configuration
+            modelBuilder.Entity<StudyMaterial>()
+                .HasOne(sm => sm.StudyTopic)
+                .WithMany(st => st.StudyMaterials)
+                .HasForeignKey(sm => sm.StudyTopicId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Materials when the Study Topic is deleted
+
+            // StudySession configuration
+            /*
+            modelBuilder.Entity<StudySession>()
+                .HasOne(ss => ss.StudyTopic)
+                .WithMany() // Add a navigation property if needed
+                .HasForeignKey(ss => ss.StudyTopicId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Sessions when the Study Topic is deleted
+            */
         }
 
     }

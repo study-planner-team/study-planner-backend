@@ -1,4 +1,5 @@
 ﻿using StudyPlannerAPI.Models.StudySessions;
+using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,6 +19,7 @@ namespace StudyPlannerAPI.Models.StudyPlans
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public ICollection<StudySession> StudySessions { get; set; }
+        public virtual ICollection<StudyTopic> StudyTopics { get; set; }
+        public virtual ICollection<StudySession> StudySessions { get; set; }
     }
 }
