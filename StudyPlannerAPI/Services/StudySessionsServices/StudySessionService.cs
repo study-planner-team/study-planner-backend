@@ -15,6 +15,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
         public async Task<List<StudySession>> GetUserStudySessions(int userId)
         {
             return await _context.StudySessions
+                .Include(s => s.StudyTopic)
                 .Where(s => s.UserId == userId)
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
@@ -27,6 +28,11 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             DateTime currentDate = scheduleData.StartDate;
             var preferredStudyDays = MapDaysToEnum(scheduleData.PreferredStudyDays);
 
+            // Retrieve the StudyTopic details using the topic IDs
+            var topics = await _context.StudyTopics
+                .Where(t => scheduleData.TopicIds.Contains(t.TopicId))
+                .ToListAsync();
+
             // Retrieve existing sessions for the user within the specified date range
             var existingSessions = await _context.StudySessions
                 .Where(s => s.UserId == scheduleData.UserId &&
@@ -34,7 +40,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                             s.Date <= scheduleData.EndDate)
                 .ToListAsync();
 
-            foreach (var topic in scheduleData.Topics)
+            foreach (var topic in topics)
             {
                 double remainingHours = topic.Hours;
 
@@ -63,9 +69,9 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                                 {
                                     Date = currentDate,
                                     Duration = sessionHours * 60,
-                                    TopicTitle = topic.Title,
                                     StudyPlanId = scheduleData.StudyPlanId,
                                     UserId = scheduleData.UserId,
+                                    TopicId = topic.TopicId,
                                     StartTime = currentStartTime,
                                     EndTime = currentStartTime.Add(TimeSpan.FromHours(sessionHours))
                                 };

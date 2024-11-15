@@ -12,7 +12,7 @@ namespace StudyPlannerAPI.Models.StudySessions
         public required TimeSpan StudyStartTime { get; set; }
         public required TimeSpan StudyEndTime { get; set; }
         public required List<string> PreferredStudyDays { get; set; }
-        public required List<StudyTopicDTO> Topics { get; set; }
+        public required List<int> TopicIds { get; set; }
         public int UserId { get; set; }
     }
 }

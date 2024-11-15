@@ -36,24 +36,30 @@ namespace StudyPlannerAPI.Data
                 .WithMany(u => u.StudySessions)
                 .HasForeignKey(ss => ss.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete to avoid deleting users when sessions are deleted
+            
+            modelBuilder.Entity<StudySession>()
+                .HasOne(ss => ss.StudyTopic)
+                .WithMany()
+                .HasForeignKey(ss => ss.TopicId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // StudyPlan configuration
             modelBuilder.Entity<StudyPlan>()
                 .HasOne(sp => sp.User)
-                .WithMany() // No navigation property needed
+                .WithMany() 
                 .HasForeignKey(sp => sp.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Plans when the User is deleted
 
             // StudyPlanMembers configuration
             modelBuilder.Entity<StudyPlanMembers>()
                 .HasOne(m => m.User)
-                .WithMany() // No navigation property needed
+                .WithMany() 
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.NoAction); // NoAction to avoid cascading issues when deleting users
 
             modelBuilder.Entity<StudyPlanMembers>()
                 .HasOne(m => m.StudyPlan)
-                .WithMany() // No navigation property needed
+                .WithMany()
                 .HasForeignKey(m => m.StudyPlanId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete StudyPlanMembers when the Study Plan is deleted
 
@@ -71,15 +77,6 @@ namespace StudyPlannerAPI.Data
                 .HasForeignKey(sm => sm.StudyTopicId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Materials when the Study Topic is deleted
 
-            // StudySession configuration
-            /*
-            modelBuilder.Entity<StudySession>()
-                .HasOne(ss => ss.StudyTopic)
-                .WithMany() // Add a navigation property if needed
-                .HasForeignKey(ss => ss.StudyTopicId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Study Sessions when the Study Topic is deleted
-            */
         }
-
     }
 }
