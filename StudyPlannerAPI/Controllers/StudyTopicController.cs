@@ -40,5 +40,16 @@ namespace StudyPlannerAPI.Controllers
             var addedTopic = await _studyTopicService.AddTopicToStudyPlan(studyPlanId, topicDTO);
             return Ok(addedTopic);
         }
+
+        [HttpDelete("{topicId}")]
+        public async Task<IActionResult> DeleteStudyStopic(int topicId)
+        {
+            var deleted = await _studyTopicService.DeleteStudyTopic(topicId);
+
+            if (!deleted)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }

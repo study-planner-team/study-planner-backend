@@ -40,5 +40,17 @@ namespace StudyPlannerAPI.Services.StudyTopicServices
             return topic;
         }
 
+        public async Task<bool> DeleteStudyTopic(int topicId)
+        {
+            var topic = await _context.StudyTopics.FirstOrDefaultAsync(st => st.TopicId == topicId);
+
+            if (topic == null)
+                return false;
+
+            _context.StudyTopics.Remove(topic);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
