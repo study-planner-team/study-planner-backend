@@ -28,70 +28,85 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             DateTime currentDate = scheduleData.StartDate;
             var preferredStudyDays = MapDaysToEnum(scheduleData.PreferredStudyDays);
 
-            // Retrieve the StudyTopic details using the topic IDs
             var topics = await _context.StudyTopics
                 .Where(t => scheduleData.TopicIds.Contains(t.TopicId))
                 .ToListAsync();
+            topics = topics.OrderBy(t => scheduleData.TopicIds.IndexOf(t.TopicId)).ToList();
 
-            // Retrieve existing sessions for the user within the specified date range
             var existingSessions = await _context.StudySessions
                 .Where(s => s.UserId == scheduleData.UserId &&
                             s.Date >= scheduleData.StartDate &&
                             s.Date <= scheduleData.EndDate)
                 .ToListAsync();
 
-            foreach (var topic in topics)
+            int topicIndex = 0;
+            double remainingHours = topics[topicIndex].Hours;
+
+            while (currentDate <= scheduleData.EndDate)
             {
-                double remainingHours = topic.Hours;
+                var currentStartTime = scheduleData.StudyStartTime;
+                int sessionsToday = 0;
 
-                while (remainingHours > 0)
+                if (preferredStudyDays.Contains(currentDate.DayOfWeek))
                 {
-                    if (currentDate > scheduleData.EndDate)
+                    while (sessionsToday < scheduleData.SessionsPerDay &&
+                           IsWithinStudyWindow(currentStartTime, scheduleData.StudyEndTime, 0.5)) // Smallest unit to check
                     {
-                        return null; // Return null if we exceed the end date
-                    }
-
-                    var currentStartTime = scheduleData.StudyStartTime;
-                    int sessionsToday = 0;
-
-                    if (preferredStudyDays.Contains(currentDate.DayOfWeek))
-                    {
-                        while (sessionsToday < scheduleData.SessionsPerDay &&
-                               IsWithinStudyWindow(currentStartTime, scheduleData.StudyEndTime, scheduleData.SessionLength) &&
-                               remainingHours > 0)
+                        if (topicIndex >= topics.Count)
                         {
-                            double sessionHours = Math.Min(remainingHours, scheduleData.SessionLength);
+                            break; // No more topics to schedule
+                        }
 
-                            // Check for conflicts directly within existingSessions
-                            if (!IsTimeSlotTaken(currentDate, currentStartTime, sessionHours, existingSessions))
+                        // Calculate the maximum available hours in the current day
+                        double availableHours = (scheduleData.StudyEndTime - currentStartTime).TotalHours;
+                        double sessionHours = Math.Min(remainingHours, Math.Min(scheduleData.SessionLength, availableHours));
+
+                        // If we have time for a session and it doesn't conflict with existing sessions
+                        if (sessionHours > 0 && !IsTimeSlotTaken(currentDate, currentStartTime, sessionHours, existingSessions))
+                        {
+                            var newSession = new StudySession
                             {
-                                var newSession = new StudySession
+                                Date = currentDate,
+                                Duration = sessionHours * 60, // Convert hours to minutes
+                                StudyPlanId = scheduleData.StudyPlanId,
+                                UserId = scheduleData.UserId,
+                                TopicId = topics[topicIndex].TopicId,
+                                StartTime = currentStartTime,
+                                EndTime = currentStartTime.Add(TimeSpan.FromHours(sessionHours))
+                            };
+
+                            generatedSessions.Add(newSession);
+                            existingSessions.Add(newSession); // Add the new session to existingSessions
+
+                            remainingHours -= sessionHours;
+                            sessionsToday++;
+                            currentStartTime = currentStartTime.Add(TimeSpan.FromHours(sessionHours));
+
+                            if (remainingHours <= 0)
+                            {
+                                topicIndex++;
+                                if (topicIndex < topics.Count)
                                 {
-                                    Date = currentDate,
-                                    Duration = sessionHours * 60,
-                                    StudyPlanId = scheduleData.StudyPlanId,
-                                    UserId = scheduleData.UserId,
-                                    TopicId = topic.TopicId,
-                                    StartTime = currentStartTime,
-                                    EndTime = currentStartTime.Add(TimeSpan.FromHours(sessionHours))
-                                };
-
-                                generatedSessions.Add(newSession);
-                                existingSessions.Add(newSession); // Add the new session to existingSessions
-
-                                remainingHours -= sessionHours;
-                                sessionsToday++;
-                                currentStartTime = currentStartTime.Add(TimeSpan.FromHours(sessionHours));
-                            }
-                            else
-                            {
-                                break;
+                                    remainingHours = topics[topicIndex].Hours;
+                                }
                             }
                         }
+                        else
+                        {
+                            currentStartTime = currentStartTime.Add(TimeSpan.FromMinutes(30)); // Increment by 30 mins to check next slot
+                        }
                     }
+                }
 
+                if (sessionsToday == 0 || !IsWithinStudyWindow(currentStartTime, scheduleData.StudyEndTime, 0.5))
+                {
                     currentDate = MoveToNextPreferredDay(currentDate.AddDays(1), preferredStudyDays);
                 }
+            }
+
+            if (generatedSessions.Count == 0)
+            {
+                return null; // Return null if no sessions could be generated
             }
 
             // Save all generated sessions to the database
@@ -133,10 +148,15 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             var sessionEndTime = startTime.Add(TimeSpan.FromHours(sessionDuration));
 
             // Checks if any existing session on the same date overlaps with the proposed time slot.
-            return sessions.Any(session => session.Date == date &&
-                ((startTime >= session.StartTime && startTime < session.EndTime) ||
-                (sessionEndTime > session.StartTime && sessionEndTime <= session.EndTime)));
+            return sessions.Any(session =>
+                session.Date == date && (
+                    (startTime >= session.StartTime && startTime < session.EndTime) || // Overlaps at the start
+                    (sessionEndTime > session.StartTime && sessionEndTime <= session.EndTime) || // Overlaps at the end
+                    (startTime <= session.StartTime && sessionEndTime >= session.EndTime) // Completely overlaps an existing session
+                )
+            );
         }
+
         private DateTime MoveToNextPreferredDay(DateTime currentDate, List<DayOfWeek> preferredStudyDays)
         {
             // Increment the date by one day until it matches a preferred study day.
@@ -145,6 +165,19 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                 currentDate = currentDate.AddDays(1);
             }
             return currentDate;
+        }
+
+        public async Task<bool> DeleteStudySession(int sessionId)
+        {
+            var session = await _context.StudySessions.FirstOrDefaultAsync(s => s.StudySessionId == sessionId);
+
+            if (session == null)
+                return false;
+
+            _context.StudySessions.Remove(session);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
     }

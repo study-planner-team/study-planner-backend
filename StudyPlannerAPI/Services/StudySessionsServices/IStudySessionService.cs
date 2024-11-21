@@ -6,5 +6,6 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
     {
         public Task<List<StudySession>?> GenerateAndStoreSchedule(StudySessionDTO scheduleData);
         public Task<List<StudySession>> GetUserStudySessions(int userId);
+        public Task<bool> DeleteStudySession(int sessionId);
     }
 }

@@ -53,5 +53,17 @@ namespace StudyPlannerAPI.Controllers
             var sessions = await _studySessionService.GetUserStudySessions(userId);
             return Ok(sessions);
         }
+
+        [HttpDelete("{sessionId}")]
+        public async Task<IActionResult> DeleteStudySession(int sessionId)
+        {
+
+            var deleted = await _studySessionService.DeleteStudySession(sessionId);
+
+            if (!deleted)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }
