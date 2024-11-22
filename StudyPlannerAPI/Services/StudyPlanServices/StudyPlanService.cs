@@ -62,7 +62,7 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
         public async Task<IEnumerable<StudyPlanResponseDTO>> GetStudyPlansForUser(int userId)
         {
-            var studyPlans = await _context.StudyPlans.Where(sp => sp.UserId == userId && sp.IsArchived == false).ToListAsync();
+            var studyPlans = await _context.StudyPlans.Include(sp => sp.User).Where(sp => sp.UserId == userId && sp.IsArchived == false).ToListAsync();
 
             return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
         }
