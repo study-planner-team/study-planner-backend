@@ -305,16 +305,16 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             await _context.SaveChangesAsync();
         }
 
-        public async Task<StudySessionResponseDTO?> GetCompletedSessions(int userId)
+        public async Task<List<StudySessionResponseDTO?>> GetCompletedSessions(int userId)
         {
             var sessions = await _context.StudySessions
                 .Include(s => s.StudyTopic)
                 .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Completed)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
             if (sessions == null) return null;
 
-            return _mapper.Map<StudySessionResponseDTO>(sessions);
+            return _mapper.Map<List<StudySessionResponseDTO>>(sessions);
         }
 
         public async Task<StudySessionResponseDTO?> GetNextSession(int userId)
