@@ -10,6 +10,8 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
         public Task<StudySessionResponseDTO?> GetCurrentSession(int userId);
         public Task<StudySessionResponseDTO?> StartSession(int sessionId);
         public Task<StudySessionResponseDTO?> EndSession(int sessionId);
+        public Task<StudySessionResponseDTO?> GetCompletedSessions(int userId);
+        public Task<StudySessionResponseDTO?> GetNextSession(int userId);
         public Task MarkExpiredSessionsAsync();
     }
 }

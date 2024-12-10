@@ -99,5 +99,29 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok(updatedSession);
         }
+
+        [HttpGet("completed")]
+        public async Task<IActionResult> GetCompletedSessions()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var sessions = await _studySessionService.GetCompletedSessions(userId);
+
+            if (sessions == null)
+                return NoContent();
+
+            return Ok(sessions);
+        }
+
+        [HttpGet("next")]
+        public async Task<IActionResult> GetNextSessions()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var sessions = await _studySessionService.GetNextSession(userId);
+
+            if (sessions == null)
+                return NoContent();
+
+            return Ok(sessions);
+        }
     }
 }

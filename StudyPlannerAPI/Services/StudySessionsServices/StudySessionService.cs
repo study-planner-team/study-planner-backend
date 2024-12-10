@@ -264,7 +264,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             return _mapper.Map<StudySessionResponseDTO>(session);
         }
 
-            public async Task MarkExpiredSessionsAsync()
+        public async Task MarkExpiredSessionsAsync()
         {
             var now = DateTime.UtcNow;
 
@@ -305,5 +305,36 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             await _context.SaveChangesAsync();
         }
 
+        public async Task<StudySessionResponseDTO?> GetCompletedSessions(int userId)
+        {
+            var sessions = await _context.StudySessions
+                .Include(s => s.StudyTopic)
+                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Completed)
+                .FirstOrDefaultAsync();
+
+            if (sessions == null) return null;
+
+            return _mapper.Map<StudySessionResponseDTO>(sessions);
+        }
+
+        public async Task<StudySessionResponseDTO?> GetNextSession(int userId)
+        {
+            var now = DateTime.UtcNow;
+            var time = now.TimeOfDay;
+
+            var nextSession = await _context.StudySessions
+                .Include(s => s.StudyTopic)
+                .ThenInclude(t => t.StudyMaterials)
+                .Where(s => s.UserId == userId &&
+                            (s.Date > now.Date || (s.Date == now.Date && s.StartTime > time)) &&
+                            s.Status == StudySessionStatus.NotStarted)
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.StartTime)
+                .FirstOrDefaultAsync();
+
+            if (nextSession == null) return null;
+
+            return _mapper.Map<StudySessionResponseDTO>(nextSession);
+        }
     }
 }
