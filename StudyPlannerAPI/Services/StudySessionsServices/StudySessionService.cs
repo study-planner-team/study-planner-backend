@@ -1,31 +1,30 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.StudySessions;
+using System;
 
 namespace StudyPlannerAPI.Services.StudySessionsServices
 {
     public class StudySessionService : IStudySessionService
     {
         private readonly AppDbContext _context;
-        public StudySessionService(AppDbContext context)
+        private readonly IMapper _mapper;
+        public StudySessionService(AppDbContext context, IMapper mapper)
         {
             _context = context;
-        }
-
-        public async Task<List<StudySession>> GetUserStudySessions(int userId)
-        {
-            return await _context.StudySessions
-                .Include(s => s.StudyTopic)
-                .Where(s => s.UserId == userId)
-                .OrderBy(s => s.Date)
-                .ThenBy(s => s.StartTime)
-                .ToListAsync();
+            _mapper = mapper;
         }
 
         public async Task<List<StudySession>?> GenerateAndStoreSchedule(StudySessionDTO scheduleData)
         {
+            // Extract TimeSpan from DateTime properties
+            var studyStartTime = scheduleData.StudyStartTime.TimeOfDay;
+            var studyEndTime = scheduleData.StudyEndTime.TimeOfDay;
+
             var generatedSessions = new List<StudySession>();
-            DateTime currentDate = scheduleData.StartDate;
+            DateTime currentDate = scheduleData.StartDate.Date;
             var preferredStudyDays = MapDaysToEnum(scheduleData.PreferredStudyDays);
 
             var topics = await _context.StudyTopics
@@ -44,13 +43,13 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
 
             while (currentDate <= scheduleData.EndDate)
             {
-                var currentStartTime = scheduleData.StudyStartTime;
+                var currentStartTime = studyStartTime;
                 int sessionsToday = 0;
 
                 if (preferredStudyDays.Contains(currentDate.DayOfWeek))
                 {
                     while (sessionsToday < scheduleData.SessionsPerDay &&
-                           IsWithinStudyWindow(currentStartTime, scheduleData.StudyEndTime, 0.5)) // Smallest unit to check
+                           IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5)) // Smallest unit to check
                     {
                         if (topicIndex >= topics.Count)
                         {
@@ -58,7 +57,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                         }
 
                         // Calculate the maximum available hours in the current day
-                        double availableHours = (scheduleData.StudyEndTime - currentStartTime).TotalHours;
+                        double availableHours = (studyEndTime - currentStartTime).TotalHours;
                         double sessionHours = Math.Min(remainingHours, Math.Min(scheduleData.SessionLength, availableHours));
 
                         // If we have time for a session and it doesn't conflict with existing sessions
@@ -98,7 +97,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                     }
                 }
 
-                if (sessionsToday == 0 || !IsWithinStudyWindow(currentStartTime, scheduleData.StudyEndTime, 0.5))
+                if (sessionsToday == 0 || !IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5))
                 {
                     currentDate = MoveToNextPreferredDay(currentDate.AddDays(1), preferredStudyDays);
                 }
@@ -178,6 +177,132 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<List<StudySessionResponseDTO>> GetUserStudySessions(int userId)
+        {
+            var sessions = await _context.StudySessions
+                .Include(s => s.StudyTopic)
+                .ThenInclude(t => t.StudyMaterials)
+                .Where(s => s.UserId == userId && s.Status==StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress)
+                .OrderBy(s => s.Date)
+                .ThenBy(s => s.StartTime)
+                .ToListAsync();
+
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+
+
+            return _mapper.Map<List<StudySessionResponseDTO>>(sessions);
+        }
+
+        public async Task<StudySessionResponseDTO?> GetCurrentSession(int userId)
+        {
+            var now = DateTime.UtcNow;
+            var time = now.TimeOfDay;
+
+            var session = await _context.StudySessions
+                .Include(s => s.StudyTopic)
+                .ThenInclude(t => t.StudyMaterials)
+                .Where(s => s.UserId == userId && s.Date == now.Date && s.StartTime <= time && s.EndTime >= time && (s.Status == StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress))
+                .FirstOrDefaultAsync();
+
+            if (session == null) return null;
+
+            return _mapper.Map<StudySessionResponseDTO>(session);
+        }
+        public async Task<StudySessionResponseDTO?> StartSession(int sessionId)
+        {
+            var session = await _context.StudySessions
+                .Include(s => s.StudyTopic)
+                .ThenInclude(t => t.StudyMaterials)
+                .FirstOrDefaultAsync(s => s.StudySessionId == sessionId);
+
+            if (session == null || session.Status != StudySessionStatus.NotStarted)
+            {
+                return null; // Ensure the session is in the correct state to start
+            }
+
+            session.ActualStartTime = DateTime.UtcNow.TimeOfDay;
+            session.Status = StudySessionStatus.InProgress;
+
+            _context.StudySessions.Update(session);
+            await _context.SaveChangesAsync();
+
+
+            return _mapper.Map<StudySessionResponseDTO>(session);
+        }
+
+        public async Task<StudySessionResponseDTO?> EndSession(int sessionId)
+        {
+            var session = await _context.StudySessions.FindAsync(sessionId);
+            if (session == null || session.Status != StudySessionStatus.InProgress)
+            {
+                return null; // Ensure only in-progress sessions can be ended
+            }
+
+            var now = DateTime.UtcNow;
+
+            // Use the actual start time or default to the scheduled start time
+            var actualStartTime = session.ActualStartTime ?? session.StartTime;
+
+            // Calculate the actual duration as the difference between now and actual start time
+            session.ActualDuration = now.TimeOfDay - actualStartTime;
+
+            // Ensure the duration is not negative
+            if (session.ActualDuration < TimeSpan.Zero)
+            {
+                session.ActualDuration = TimeSpan.Zero;
+            }
+
+            // Mark the session as completed
+            session.Status = StudySessionStatus.Completed;
+
+            _context.StudySessions.Update(session);
+            await _context.SaveChangesAsync();
+
+
+            return _mapper.Map<StudySessionResponseDTO>(session);
+        }
+
+            public async Task MarkExpiredSessionsAsync()
+        {
+            var now = DateTime.UtcNow;
+
+            var sessions = await _context.StudySessions
+                .Where(s => s.Status == StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress)
+                .ToListAsync();
+
+            var missedSessions = sessions
+                .Where(s => s.Status == StudySessionStatus.NotStarted && s.Date.Add(s.EndTime) < now)
+                .ToList();
+
+            var endedSessions = sessions
+                .Where(s => s.Status == StudySessionStatus.InProgress && s.Date.Add(s.EndTime) < now)
+                .ToList();
+
+            foreach (var session in missedSessions)
+            {
+                session.Status = StudySessionStatus.Missed;
+                session.ActualDuration = TimeSpan.Zero;
+            }
+
+            foreach (var session in endedSessions)
+            {
+                session.Status = StudySessionStatus.Completed;
+
+                if (session.StartTime < session.EndTime)
+                {
+                    session.ActualDuration = (session.EndTime - session.StartTime).Duration();
+                }
+                else
+                {
+                    session.ActualDuration = TimeSpan.Zero;
+                }
+            }
+
+            _context.StudySessions.UpdateRange(missedSessions);
+            _context.StudySessions.UpdateRange(endedSessions);
+            await _context.SaveChangesAsync();
         }
 
     }
