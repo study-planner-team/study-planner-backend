@@ -65,5 +65,39 @@ namespace StudyPlannerAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentSession()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var session = await _studySessionService.GetCurrentSession(userId);
+
+            if (session == null)
+                return NoContent();
+
+            return Ok(session);
+        }
+
+        [HttpPost("{sessionId}/start")]
+        public async Task<IActionResult> StartSession(int sessionId)
+        {
+            var updatedSession = await _studySessionService.StartSession(sessionId);
+
+            if (updatedSession==null)
+                return BadRequest("Could not start session. Ensure it has not already been started, completed, or missed.");
+
+            return Ok(updatedSession);
+        }
+
+        [HttpPost("{sessionId}/end")]
+        public async Task<IActionResult> EndSession(int sessionId)
+        {
+            var updatedSession = await _studySessionService.EndSession(sessionId);
+
+            if (updatedSession == null)
+                return BadRequest("Could not end session. Ensure it is in progress.");
+
+            return Ok(updatedSession);
+        }
     }
 }

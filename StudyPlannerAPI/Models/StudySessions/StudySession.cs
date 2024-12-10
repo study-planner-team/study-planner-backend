@@ -5,6 +5,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StudyPlannerAPI.Models.StudySessions
 {
+    public enum StudySessionStatus
+    {
+        NotStarted,
+        InProgress,
+        Completed,
+        Missed
+    }
     public class StudySession
     {
         [Key]
@@ -13,6 +20,9 @@ namespace StudyPlannerAPI.Models.StudySessions
         public required double Duration { get; set; }
         public required TimeSpan StartTime { get; set; }
         public required TimeSpan EndTime { get; set; }
+        public StudySessionStatus Status { get; set; } = StudySessionStatus.NotStarted;
+        public TimeSpan? ActualStartTime { get; set; }
+        public TimeSpan? ActualDuration { get; set; }  
 
         public int StudyPlanId { get; set; }
         public StudyPlan StudyPlan { get; set; }

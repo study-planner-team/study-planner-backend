@@ -9,8 +9,8 @@ namespace StudyPlannerAPI.Models.StudySessions
         public required DateTime EndDate { get; set; }
         public required int SessionsPerDay { get; set; }
         public required int SessionLength { get; set; }
-        public required TimeSpan StudyStartTime { get; set; }
-        public required TimeSpan StudyEndTime { get; set; }
+        public required DateTime StudyStartTime { get; set; }
+        public required DateTime StudyEndTime { get; set; }
         public required List<string> PreferredStudyDays { get; set; }
         public required List<int> TopicIds { get; set; }
         public int UserId { get; set; }

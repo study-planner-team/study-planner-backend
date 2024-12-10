@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudyPlannerAPI.Data;
 
@@ -11,9 +12,11 @@ using StudyPlannerAPI.Data;
 namespace StudyPlannerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241207150443_AddStatusToStudySession")]
+    partial class AddStatusToStudySession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,9 +126,6 @@ namespace StudyPlannerAPI.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudySessionId"));
 
                     b.Property<TimeSpan?>("ActualDuration")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("ActualStartTime")
                         .HasColumnType("time");
 
                     b.Property<DateTime>("Date")

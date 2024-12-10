@@ -20,13 +20,18 @@ using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Services.StudyTopicServices;
 using StudyPlannerAPI.Validators.UserValidators;
 using StudyPlannerAPI.Validators.StudySessionValidators;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -88,6 +93,9 @@ builder.Services.AddScoped<IStudyPlanService, StudyPlanService>();
 builder.Services.AddScoped<IStudyTopicService, StudyTopicService>();
 builder.Services.AddScoped<IStudySessionService, StudySessionService>();
 builder.Services.AddScoped<IStudyMaterialService, StudyMaterialService>();
+
+//Background services
+builder.Services.AddHostedService<SessionMonitorService>();
 
 // Validators
 builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();

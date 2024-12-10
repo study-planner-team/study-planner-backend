@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudyPlannerAPI.Data;
 
@@ -11,9 +12,11 @@ using StudyPlannerAPI.Data;
 namespace StudyPlannerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241205170736_UpdatedStudySessionModel")]
+    partial class UpdatedStudySessionModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,9 +128,6 @@ namespace StudyPlannerAPI.Migrations
                     b.Property<TimeSpan?>("ActualDuration")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan?>("ActualStartTime")
-                        .HasColumnType("time");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -137,11 +137,11 @@ namespace StudyPlannerAPI.Migrations
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<int>("StudyPlanId")
                         .HasColumnType("int");
@@ -151,6 +151,9 @@ namespace StudyPlannerAPI.Migrations
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("WasMissed")
+                        .HasColumnType("bit");
 
                     b.HasKey("StudySessionId");
 
