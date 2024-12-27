@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using StudyPlannerAPI.Models.Quizes.RequestDTOs;
+using StudyPlannerAPI.Models.Quizes;
 using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
+using StudyPlannerAPI.Models.Quizes.ResponseDTOs;
 
 namespace StudyPlannerAPI.Mapper
 {
@@ -38,6 +41,21 @@ namespace StudyPlannerAPI.Mapper
             CreateMap<StudyMaterialDTO, StudyMaterial>();
             CreateMap<StudyMaterial, StudyMaterialResponseDTO>();
 
+            // Quiz
+            CreateMap<QuizRequestDTO, Quiz>()
+                .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+            CreateMap<QuestionRequestDTO, Question>()
+                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
+            CreateMap<QuestionOptionRequestDTO, QuestionOption>();
+
+            CreateMap<Quiz, QuizResponseDTO>()
+                .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+            CreateMap<Question, QuestionResponseDTO>()
+                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
+            CreateMap<QuestionOption, QuestionOptionResponseDTO>();
+
+            CreateMap<QuizAssignment, QuizAssignmentResponseDTO>()
+                .ForMember(dest => dest.Quiz, opt => opt.MapFrom(src => src.Quiz));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using StudyPlannerAPI.Models.StudySessions;
+﻿using StudyPlannerAPI.Models.Quizes;
+using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
 using System.ComponentModel.DataAnnotations;
@@ -21,5 +22,6 @@ namespace StudyPlannerAPI.Models.StudyPlans
 
         public virtual ICollection<StudyTopic> StudyTopics { get; set; }
         public virtual ICollection<StudySession> StudySessions { get; set; }
+        public virtual ICollection<Quiz> Quizzes { get; set; }
     }
 }
