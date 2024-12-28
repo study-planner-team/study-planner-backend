@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudyPlannerAPI.Data;
 
@@ -11,9 +12,11 @@ using StudyPlannerAPI.Data;
 namespace StudyPlannerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241223170425_AddQuizAssignmentModel")]
+    partial class AddQuizAssignmentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,16 +119,13 @@ namespace StudyPlannerAPI.Migrations
                     b.Property<DateTime?>("CompletedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CorrectAnswers")
-                        .HasColumnType("int");
-
                     b.Property<int>("QuizId")
                         .HasColumnType("int");
 
-                    b.Property<int>("State")
-                        .HasColumnType("int");
+                    b.Property<double?>("Score")
+                        .HasColumnType("float");
 
-                    b.Property<int?>("TotalQuestions")
+                    b.Property<int>("State")
                         .HasColumnType("int");
 
                     b.HasKey("AssignmentId");

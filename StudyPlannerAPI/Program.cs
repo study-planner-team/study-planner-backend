@@ -22,6 +22,7 @@ using StudyPlannerAPI.Validators.UserValidators;
 using StudyPlannerAPI.Validators.StudySessionValidators;
 using System.Text.Json.Serialization;
 using StudyPlannerAPI.Services.StatisticsService;
+using StudyPlannerAPI.Services.QuizService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -95,6 +96,7 @@ builder.Services.AddScoped<IStudyTopicService, StudyTopicService>();
 builder.Services.AddScoped<IStudySessionService, StudySessionService>();
 builder.Services.AddScoped<IStudyMaterialService, StudyMaterialService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
 
 //Background services
 builder.Services.AddHostedService<SessionMonitorService>();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudyPlannerAPI.Data;
 
@@ -11,9 +12,11 @@ using StudyPlannerAPI.Data;
 namespace StudyPlannerAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241223162515_AddQuizModel")]
+    partial class AddQuizModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,44 +100,6 @@ namespace StudyPlannerAPI.Migrations
                     b.HasIndex("StudyPlanId");
 
                     b.ToTable("Quizzes");
-                });
-
-            modelBuilder.Entity("StudyPlannerAPI.Models.Quizes.QuizAssignment", b =>
-                {
-                    b.Property<int>("AssignmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentId"));
-
-                    b.Property<DateTime>("AssignedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("AssignedToUserId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CompletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CorrectAnswers")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuizId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TotalQuestions")
-                        .HasColumnType("int");
-
-                    b.HasKey("AssignmentId");
-
-                    b.HasIndex("AssignedToUserId");
-
-                    b.HasIndex("QuizId");
-
-                    b.ToTable("QuizAssignments");
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyMaterials.StudyMaterial", b =>
@@ -378,25 +343,6 @@ namespace StudyPlannerAPI.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("StudyPlan");
-                });
-
-            modelBuilder.Entity("StudyPlannerAPI.Models.Quizes.QuizAssignment", b =>
-                {
-                    b.HasOne("StudyPlannerAPI.Models.Users.User", "AssignedToUser")
-                        .WithMany()
-                        .HasForeignKey("AssignedToUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("StudyPlannerAPI.Models.Quizes.Quiz", "Quiz")
-                        .WithMany()
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AssignedToUser");
-
-                    b.Navigation("Quiz");
                 });
 
             modelBuilder.Entity("StudyPlannerAPI.Models.StudyMaterials.StudyMaterial", b =>
