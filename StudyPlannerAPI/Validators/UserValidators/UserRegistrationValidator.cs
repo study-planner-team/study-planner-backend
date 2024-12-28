@@ -10,20 +10,20 @@ namespace StudyPlannerAPI.Validators.UserValidators
             RuleFor(u => u.Username)
                 .NotEmpty()
                 .MinimumLength(3)
-                .WithMessage("Minimalna długość nazwy użytkownika to 3 znaki");
+                .WithMessage("The username must be at least 3 characters long.");
 
             RuleFor(u => u.Password)
                 .NotEmpty()
                 .MinimumLength(8)
-                .WithMessage("Minimalna długość hasła to 8 znaków")
+                .WithMessage("The password must be at least 8 characters long.")
                 .Must(ContainCapitalLetter)
-                .WithMessage("Hasło musi zawierać przynajmniej jedną wielką literę");
+                .WithMessage("The password must contain at least one uppercase letter.");
 
             RuleFor(u => u.Email)
                .NotEmpty()
-               .WithMessage("Adres email nie może być pusty")
+               .WithMessage("The email address cannot be empty.")
                .EmailAddress()
-               .WithMessage("Nieprawidłowy format adresu email");
+               .WithMessage("The email address format is invalid.");
         }
 
         private bool ContainCapitalLetter(string password)

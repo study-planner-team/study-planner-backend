@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using StudyPlannerAPI.Models.Quizes.RequestDTOs;
+using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Services.QuizService;
+using StudyPlannerAPI.Validators.StudyPlanValidators;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace StudyPlannerAPI.Controllers
@@ -10,15 +14,23 @@ namespace StudyPlannerAPI.Controllers
     public class QuizController : ControllerBase
     {
         private readonly IQuizService _quizService;
-
-        public QuizController(IQuizService quizService)
+        private readonly IValidator<QuizRequestDTO> _quizValidator;
+        public QuizController(IQuizService quizService, IValidator<QuizRequestDTO> quizValidator)
         {
             _quizService = quizService;
+            _quizValidator = quizValidator;
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateQuizWithQuestions(int studyPlanId, [FromBody] QuizRequestDTO quizDto)
         {
+            var validationResult = await _quizValidator.ValidateAsync(quizDto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var createdQuiz = await _quizService.CreateQuizWithQuestions(studyPlanId, quizDto, userId);

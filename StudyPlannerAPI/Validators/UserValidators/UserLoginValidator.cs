@@ -9,11 +9,11 @@ namespace StudyPlannerAPI.Validators.UserValidators
         {
             RuleFor(u => u.Username)
                 .NotEmpty()
-                .WithMessage("Nazwa użytkownika nie może być pusta");
+                .WithMessage("The username cannot be empty.");
 
             RuleFor(u => u.Password)
                 .NotEmpty()
-                .WithMessage("Hasło nie może być puste");
+                .WithMessage("The password cannot be empty.");
         }
     }
 }
