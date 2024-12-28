@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StudyPlannerAPI", "StudyPlannerAPI\StudyPlannerAPI.csproj", "{0916BED2-3F1A-42F1-8097-AEF99CC56997}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudyPlannerTests", "StudyPlanner\StudyPlannerTests.csproj", "{81F7A69F-86A4-4975-85E9-F3A2832B65E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0916BED2-3F1A-42F1-8097-AEF99CC56997}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0916BED2-3F1A-42F1-8097-AEF99CC56997}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0916BED2-3F1A-42F1-8097-AEF99CC56997}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81F7A69F-86A4-4975-85E9-F3A2832B65E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81F7A69F-86A4-4975-85E9-F3A2832B65E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81F7A69F-86A4-4975-85E9-F3A2832B65E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81F7A69F-86A4-4975-85E9-F3A2832B65E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
