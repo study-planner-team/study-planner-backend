@@ -253,37 +253,49 @@ namespace StudyPlannerTests.Services
         }
 
         [Fact]
-        public async Task UpdateQuizScore_ShouldUpdateAssignment_WhenAssignmentExists()
+        public async Task UpdateQuizScore_ShouldUpdateCorrectAnswersAndMarkAsCompleted()
         {
             // Arrange
             var context = InMemoryDbContextFactory.Create("TestDb_UpdateQuizScore");
             await DatabaseSeeder.SeedQuizAssignments(context);
             var service = new QuizService(context, _mapper);
 
+            // Prepare user answers
+            var userAnswers = new List<UserAnswerDTO>
+            {
+                new UserAnswerDTO { QuestionId = 11, SelectedOptionId = 111 }, // Correct answer
+                new UserAnswerDTO { QuestionId = 12, SelectedOptionId = 122 }  // Wrong answer
+            };
+
             // Act
-            var result = await service.UpdateQuizScore(1, 8, 10);
+            var result = await service.UpdateQuizScore(1, userAnswers);
 
             // Assert
-            result.Should().BeTrue();
-            var updatedAssignment = await context.QuizAssignments.FirstOrDefaultAsync(a => a.AssignmentId == 1);
-            updatedAssignment.Should().NotBeNull();
-            updatedAssignment!.CorrectAnswers.Should().Be(8);
-            updatedAssignment.TotalQuestions.Should().Be(10);
-            updatedAssignment.State.Should().Be(QuizState.Completed);
+            result.Should().NotBeNull();
+            result!.CorrectAnswers.Should().Be(1);
+            result.TotalQuestions.Should().Be(2);
+            result.State.Should().Be("Completed");
         }
 
         [Fact]
-        public async Task UpdateQuizScore_ShouldReturnFalse_WhenAssignmentDoesNotExist()
+        public async Task UpdateQuizScore_ShouldReturnNull_WhenAssignmentDoesNotExist()
         {
             // Arrange
             var context = InMemoryDbContextFactory.Create("TestDb_UpdateQuizScore_NonExistent");
             var service = new QuizService(context, _mapper);
 
+            // Prepare user answers
+            var userAnswers = new List<UserAnswerDTO>
+            {
+                new UserAnswerDTO { QuestionId = 11, SelectedOptionId = 111 },
+                new UserAnswerDTO { QuestionId = 12, SelectedOptionId = 122 }
+            };
+
             // Act
-            var result = await service.UpdateQuizScore(99, 8, 10);
+            var result = await service.UpdateQuizScore(99, userAnswers);
 
             // Assert
-            result.Should().BeFalse();
+            result.Should().BeNull();
         }
 
         [Fact]
