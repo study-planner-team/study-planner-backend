@@ -14,7 +14,7 @@ namespace StudyPlannerAPI.Services.QuizService
         public Task<IEnumerable<QuizAssignmentResponseDTO>> GetAssignedQuizzes(int userId);
         public Task<QuizAssignmentResponseDTO?> GetAssignedQuizById(int userId, int quizId);
         public Task<IEnumerable<QuizResponseDTO>> GetCreatedQuizzes(int userId);
-        public Task<bool> UpdateQuizScore(int assignmentId, int correctAnswers, int totalQuestions);
+        public Task<QuizAssignmentResponseDTO?> UpdateQuizScore(int assignmentId, ICollection<UserAnswerDTO> userAnswers);
         public Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId);
     }
 }

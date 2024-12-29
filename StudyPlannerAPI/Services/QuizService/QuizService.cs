@@ -127,25 +127,47 @@ namespace StudyPlannerAPI.Services.QuizService
             throw new NotImplementedException();
         }
 
-        public async Task<bool> UpdateQuizScore(int assignmentId, int correctAnswers, int totalQuestions)
+        public async Task<QuizAssignmentResponseDTO?> UpdateQuizScore(int assignmentId, ICollection<UserAnswerDTO> userAnswers)
         {
             var assignment = await _context.QuizAssignments
-                .FirstOrDefaultAsync(q => q.AssignmentId == assignmentId);
+                .Include(a => a.Quiz)
+                .ThenInclude(q => q.Questions)
+                .ThenInclude(q => q.Options)
+                .FirstOrDefaultAsync(a => a.AssignmentId == assignmentId);
 
             if (assignment == null)
+                return null;
+
+            int correctCount = 0;
+            int total = assignment.Quiz.Questions.Count;
+
+            // For each question in the assignment, check if the user’s selectedOption is correct
+            foreach (var userAnswer in userAnswers)
             {
-                return false;
+                var question = assignment.Quiz.Questions
+                    .FirstOrDefault(q => q.QuestionId == userAnswer.QuestionId);
+
+                if (question != null)
+                {
+                    // The “correct” option is the one with `IsCorrect == true`
+                    var correctOption = question.Options.FirstOrDefault(o => o.IsCorrect);
+
+                    if (correctOption != null && correctOption.OptionId == userAnswer.SelectedOptionId)
+                    {
+                        correctCount++;
+                    }
+                }
             }
 
-            assignment.CorrectAnswers = correctAnswers;
-            assignment.TotalQuestions = totalQuestions;
+            assignment.CorrectAnswers = correctCount;
+            assignment.TotalQuestions = total;
             assignment.CompletedOn = DateTime.UtcNow;
             assignment.State = QuizState.Completed;
 
             _context.QuizAssignments.Update(assignment);
             await _context.SaveChangesAsync();
 
-            return true;
+            return _mapper.Map<QuizAssignmentResponseDTO?>(assignment);
         }
 
         public async Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId)

@@ -55,7 +55,21 @@ namespace StudyPlannerAPI.Mapper
             CreateMap<QuestionOption, QuestionOptionResponseDTO>();
 
             CreateMap<QuizAssignment, QuizAssignmentResponseDTO>()
-                .ForMember(dest => dest.Quiz, opt => opt.MapFrom(src => src.Quiz));
+                .ForMember(dest => dest.Quiz, opt => opt.MapFrom(src => src.Quiz))
+                .AfterMap((src, dest, context) =>
+                {
+                    // If the quiz is not completed, remove isCorrect
+                    if (src.State != QuizState.Completed)
+                    {
+                        foreach (var question in dest.Quiz.Questions)
+                        {
+                            foreach (var option in question.Options)
+                            {
+                                option.IsCorrect = null;
+                            }
+                        }
+                    }
+                });
         }
     }
 }

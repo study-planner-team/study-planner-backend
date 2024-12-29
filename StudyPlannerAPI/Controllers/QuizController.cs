@@ -108,14 +108,15 @@ namespace StudyPlannerAPI.Controllers
         [HttpPut("assigned/{assignmentId}/complete")]
         public async Task<IActionResult> CompleteQuiz(int assignmentId, [FromBody] QuizCompletionDTO completionData)
         {
-            var success = await _quizService.UpdateQuizScore(assignmentId, completionData.CorrectAnswers, completionData.TotalQuestions);
+            var updatedAssignment = await _quizService.UpdateQuizScore(assignmentId, completionData.Answers);
 
-            if (!success)
+            if (updatedAssignment == null)
             {
                 return NotFound("Quiz assignment not found");
             }
 
-            return NoContent(); 
+            // Return 200 OK with the updated assignment
+            return Ok(updatedAssignment);
         }
 
         [HttpGet("completed")]
