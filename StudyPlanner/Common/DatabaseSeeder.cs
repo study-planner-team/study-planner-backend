@@ -1,5 +1,7 @@
 ﻿using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerTests.Common.EntityFactories;
+using StudyPlannerTests.Common.EntityFactories.StudyPlannerTests.Common.EntityFactories;
 
 namespace StudyPlannerTests.Common
 {
@@ -53,6 +55,65 @@ namespace StudyPlannerTests.Common
                 StudyMaterialFactory.CreateStudyMaterial(1, 1, "Material 1", "http://example.com/material1"),
                 StudyMaterialFactory.CreateStudyMaterial(2, 1, "Material 2", "http://example.com/material2"),
                 StudyMaterialFactory.CreateStudyMaterial(3, 2, "Material 3", "http://example.com/material3")
+            );
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedStudySessions(AppDbContext context)
+        {
+            await SeedStudyTopics(context);
+
+            context.StudySessions.AddRange(
+                // Missed session
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 1,
+                    studyPlanId: 1,
+                    userId: 1,
+                    topicId: 1,
+                    date: DateTime.UtcNow.Date.AddDays(-1),
+                    startTime: TimeSpan.FromHours(10),
+                    endTime: TimeSpan.FromHours(12),
+                    status: StudySessionStatus.Missed
+                ),
+
+                // In-progress session
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 2,
+                    studyPlanId: 1,
+                    userId: 1,
+                    topicId: 1,
+                    date: DateTime.UtcNow.Date,
+                    startTime: TimeSpan.FromHours(DateTime.UtcNow.Hour - 1),
+                    endTime: TimeSpan.FromHours(DateTime.UtcNow.Hour + 1),
+                    status: StudySessionStatus.InProgress,
+                    actualStartTime: TimeSpan.FromHours(DateTime.UtcNow.Hour - 1)
+                ),
+
+                // Completed session
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 3,
+                    studyPlanId: 2,
+                    userId: 2,
+                    topicId: 2,
+                    date: DateTime.UtcNow.Date.AddDays(-2),
+                    startTime: TimeSpan.FromHours(14),
+                    endTime: TimeSpan.FromHours(16),
+                    status: StudySessionStatus.Completed,
+                    actualDuration: TimeSpan.FromHours(2)
+                ),
+
+                // NotStarted session
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 4,
+                    studyPlanId: 2,
+                    userId: 2,
+                    topicId: 2,
+                    date: DateTime.UtcNow.Date.AddDays(1), 
+                    startTime: TimeSpan.FromHours(10),
+                    endTime: TimeSpan.FromHours(12),
+                    status: StudySessionStatus.NotStarted
+                )
             );
 
             await context.SaveChangesAsync();

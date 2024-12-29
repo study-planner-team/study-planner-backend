@@ -184,7 +184,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             var sessions = await _context.StudySessions
                 .Include(s => s.StudyTopic)
                 .ThenInclude(t => t.StudyMaterials)
-                .Where(s => s.UserId == userId && s.Status==StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress)
+                .Where(s => s.UserId == userId && (s.Status == StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress))
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
                 .ToListAsync();
