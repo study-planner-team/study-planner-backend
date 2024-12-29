@@ -41,9 +41,9 @@ namespace StudyPlannerTests.Common
         public static async Task SeedStudyTopics(AppDbContext context)
         {
             context.StudyTopics.AddRange(
-                StudyTopicFactory.CreateStudyTopic(1, 1, "Study Topic 1"),
-                StudyTopicFactory.CreateStudyTopic(2, 1, "Study Topic 2", false),
-                StudyTopicFactory.CreateStudyTopic(3, 2, "Study Topic 3")
+                StudyTopicFactory.CreateStudyTopic(1, 1, "Study Topic 1", 4),
+                StudyTopicFactory.CreateStudyTopic(2, 1, "Study Topic 2", 6, false),
+                StudyTopicFactory.CreateStudyTopic(3, 2, "Study Topic 3", 8)
             );
 
             await context.SaveChangesAsync();
@@ -113,6 +113,37 @@ namespace StudyPlannerTests.Common
                     startTime: TimeSpan.FromHours(10),
                     endTime: TimeSpan.FromHours(12),
                     status: StudySessionStatus.NotStarted
+                )
+            );
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedConflictingStudySessions(AppDbContext context)
+        {
+            await SeedStudyTopics(context);
+
+            context.StudySessions.AddRange(
+                // Conflicting session at the same date and time
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 5,
+                    studyPlanId: 1,
+                    userId: 1,
+                    topicId: 1,
+                    date: DateTime.UtcNow.Date, // Same date as the test's schedule
+                    startTime: TimeSpan.FromHours(8), // Start at 8:00 AM
+                    endTime: TimeSpan.FromHours(10), // End at 10:00 AM
+                    status: StudySessionStatus.NotStarted
+                ),
+                StudySessionFactory.CreateStudySession(
+                    sessionId: 6,
+                    studyPlanId: 1,
+                    userId: 1,
+                    topicId: 2,
+                    date: DateTime.UtcNow.Date.AddDays(1), // Same as the next preferred day
+                    startTime: TimeSpan.FromHours(9), // Start at 9:00 AM
+                    endTime: TimeSpan.FromHours(11), // End at 11:00 AM
+                    status: StudySessionStatus.InProgress
                 )
             );
 

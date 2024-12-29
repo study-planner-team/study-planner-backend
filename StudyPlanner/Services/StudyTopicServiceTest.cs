@@ -38,7 +38,7 @@ namespace StudyPlannerTests.Services
 
             var topic = result.FirstOrDefault(t => t.Title == "Study Topic 1");
             topic.Should().NotBeNull();
-            topic.Hours.Should().Be(8);
+            topic!.Hours.Should().Be(4);
             topic.StudyMaterials.Should().NotBeEmpty();
             topic.StudyMaterials.Should().AllBeOfType<StudyMaterialResponseDTO>();
         }

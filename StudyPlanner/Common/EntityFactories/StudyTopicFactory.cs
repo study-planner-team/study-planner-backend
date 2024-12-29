@@ -10,14 +10,14 @@ namespace StudyPlannerTests.Common.EntityFactories
 {
     public static class StudyTopicFactory
     {
-        public static StudyTopic CreateStudyTopic(int topicId, int studyPlanId, string title, bool includeMaterials = true)
+        public static StudyTopic CreateStudyTopic(int topicId, int studyPlanId, string title, double hours, bool includeMaterials = true)
         {
             var studyTopic = new StudyTopic
             {
                 TopicId = topicId,
                 StudyPlanId = studyPlanId,
                 Title = title,
-                Hours = 8,
+                Hours = hours,
                 StudyMaterials = includeMaterials
                     ? new List<StudyMaterial>
                     {

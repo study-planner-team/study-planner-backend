@@ -3,6 +3,7 @@ using FluentAssertions;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Services.StudySessionsServices;
 using StudyPlannerTests.Common;
+using StudyPlannerTests.Common.EntityFactories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -243,6 +244,298 @@ namespace StudyPlannerTests.Services
 
             // Act
             var result = await service.GetNextSession(3);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldGenerateSessions_WhenNoConflicts()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_NoConflicts");
+            await DatabaseSeeder.SeedStudyTopics(context);
+            var service = new StudySessionService(context, _mapper);
+
+            // Extend the date range to ensure enough time
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(4),
+                sessionsPerDay: 2,
+                sessionLength: 2,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(18),
+                preferredDays: new List<string> { "Monday", "Tuesday", "Thursday" },
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(5);
+            result!.Select(s => s.Date.DayOfWeek).Should().OnlyContain(d => d == DayOfWeek.Monday || d == DayOfWeek.Tuesday || d == DayOfWeek.Thursday);
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenNoPreferredStudyDays()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_NoPreferredStudyDays");
+            await DatabaseSeeder.SeedStudySessions(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(2),
+                sessionsPerDay: 3,
+                sessionLength: 2,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(18),
+                preferredDays: new List<string>(), // No days preferred
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        //This test validates that the script skips time slots that conflict with existing sessions
+        //Specifically, it ensures that sessions are not created on UTC now or UTC now + 1 day at times (8 AM, 9 AM) where conflicts are present
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldSkipConflictingSessions()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_SkipConflictingSessions");
+            await DatabaseSeeder.SeedConflictingStudySessions(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(15),
+                sessionsPerDay: 3,
+                sessionLength: 1,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(12),
+                preferredDays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Saturday", "Sunday" },
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Any(session => session.Date == DateTime.UtcNow.Date && session.StartTime == TimeSpan.FromHours(8)).Should().BeFalse();
+            result!.Any(session => session.Date == DateTime.UtcNow.Date && session.StartTime == TimeSpan.FromHours(9)).Should().BeFalse();
+            result!.Any(session => session.Date == DateTime.UtcNow.Date.AddDays(1) && session.StartTime == TimeSpan.FromHours(9)).Should().BeFalse();
+            result!.Any(session => session.Date == DateTime.UtcNow.Date.AddDays(1) && session.StartTime == TimeSpan.FromHours(10)).Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldIgnoreNonexistentTopics()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_IgnoreNonexistentTopics");
+            await DatabaseSeeder.SeedStudySessions(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(2),
+                sessionsPerDay: 3,
+                sessionLength: 2,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(18),
+                preferredDays: new List<string> { "Monday", "Tuesday" },
+                topicIds: new List<int> { 99, 100 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldRespectSessionsPerDayLimit()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_RespectSessionsPerDay");
+            await DatabaseSeeder.SeedStudySessions(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(2),
+                sessionsPerDay: 1,
+                sessionLength: 1,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(18),
+                preferredDays: new List<string> { "Monday", "Tuesday" },
+                topicIds: new List<int> { 1 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(4); // 1 session per day for 4 days
+            result!.Select(s => s.Date.DayOfWeek).Should().OnlyContain(d => d == DayOfWeek.Tuesday || d == DayOfWeek.Monday);
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenScheduleOutOfStudyPlanDates()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_StudyPlanDates");
+            await DatabaseSeeder.SeedStudyPlans(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: new DateTime(2024, 11, 28),
+                endDate: new DateTime(2025, 11, 30), // Exceeds the StudyPlan's end date because the plan needs 4 days for all the sessions
+                sessionsPerDay: 1,
+                sessionLength: 1,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(9),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(12),
+                preferredDays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Saturday", "Sunday" },
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenTopicListIsEmpty()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_EmptyTopicList");
+            await DatabaseSeeder.SeedStudyTopics(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(2),
+                sessionsPerDay: 3,
+                sessionLength: 2,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(18),
+                preferredDays: new List<string> { "Monday", "Tuesday" },
+                topicIds: new List<int>()
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenStudyWindowIsInvalid()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_InvalidStudyWindow");
+            await DatabaseSeeder.SeedStudyTopics(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(2),
+                sessionsPerDay: 3,
+                sessionLength: 2,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(13), // Start after end
+                studyEndTime: DateTime.UtcNow.Date.AddHours(8),
+                preferredDays: new List<string> { "Monday", "Tuesday" },
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenNoPreferredDaysOverlap()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_NoPreferredDaysOverlap");
+            await DatabaseSeeder.SeedStudyTopics(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var fixedStartDate = new DateTime(2024, 12, 29);
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: fixedStartDate,
+                endDate: fixedStartDate.AddDays(2),
+                sessionsPerDay: 3,
+                sessionLength: 2,
+                studyStartTime: fixedStartDate.AddHours(8),
+                studyEndTime: fixedStartDate.AddHours(18),
+                preferredDays: new List<string> { "Friday", "Saturday" }, // No overlap with Monday-Wednesday
+                topicIds: new List<int> { 1, 2 }
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GenerateAndStoreSchedule_ShouldReturnNull_WhenTopicsExceedAvailableTime()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_ExceedAvailableTime");
+            await DatabaseSeeder.SeedStudyTopics(context);
+            var service = new StudySessionService(context, _mapper);
+
+            var scheduleData = StudySessionDTOFactory.CreateSchedule(
+                studyPlanId: 1,
+                userId: 1,
+                startDate: DateTime.UtcNow.Date,
+                endDate: DateTime.UtcNow.Date.AddDays(1), // Limited time
+                sessionsPerDay: 1,
+                sessionLength: 1,
+                studyStartTime: DateTime.UtcNow.Date.AddHours(8),
+                studyEndTime: DateTime.UtcNow.Date.AddHours(9),
+                preferredDays: new List<string> { "Monday", "Tuesday", "Friday" },
+                topicIds: new List<int> { 1, 2 } // Requires more time than available
+            );
+
+            // Act
+            var result = await service.GenerateAndStoreSchedule(scheduleData);
 
             // Assert
             result.Should().BeNull();
