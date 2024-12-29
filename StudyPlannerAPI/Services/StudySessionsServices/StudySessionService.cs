@@ -23,6 +23,12 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             var studyStartTime = scheduleData.StudyStartTime.TimeOfDay;
             var studyEndTime = scheduleData.StudyEndTime.TimeOfDay;
 
+            // Validate if there are any preferred study days
+            if (scheduleData.PreferredStudyDays == null || !scheduleData.PreferredStudyDays.Any())
+            {
+                return null; // No preferred study days
+            }
+
             var generatedSessions = new List<StudySession>();
             DateTime currentDate = scheduleData.StartDate.Date;
             var preferredStudyDays = MapDaysToEnum(scheduleData.PreferredStudyDays);
@@ -30,7 +36,14 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             var topics = await _context.StudyTopics
                 .Where(t => scheduleData.TopicIds.Contains(t.TopicId))
                 .ToListAsync();
+
+            if (!topics.Any())
+            {
+                return null; // No topics available for scheduling
+            }
+
             topics = topics.OrderBy(t => scheduleData.TopicIds.IndexOf(t.TopicId)).ToList();
+
 
             var existingSessions = await _context.StudySessions
                 .Where(s => s.UserId == scheduleData.UserId &&
@@ -92,7 +105,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                         }
                         else
                         {
-                            currentStartTime = currentStartTime.Add(TimeSpan.FromMinutes(30)); // Increment by 30 mins to check next slot
+                            currentStartTime = currentStartTime.Add(TimeSpan.FromMinutes(30));
                         }
                     }
                 }
@@ -101,6 +114,12 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                 {
                     currentDate = MoveToNextPreferredDay(currentDate.AddDays(1), preferredStudyDays);
                 }
+            }
+
+            // If there are still hours left for topics, return null
+            if (topicIndex < topics.Count && remainingHours > 0)
+            {
+                return null;
             }
 
             if (generatedSessions.Count == 0)
@@ -158,7 +177,11 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
 
         private DateTime MoveToNextPreferredDay(DateTime currentDate, List<DayOfWeek> preferredStudyDays)
         {
-            // Increment the date by one day until it matches a preferred study day.
+            if (!preferredStudyDays.Any())
+            {
+                throw new ArgumentException("Preferred study days cannot be empty.");
+            }
+
             while (!preferredStudyDays.Contains(currentDate.DayOfWeek))
             {
                 currentDate = currentDate.AddDays(1);
@@ -184,7 +207,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             var sessions = await _context.StudySessions
                 .Include(s => s.StudyTopic)
                 .ThenInclude(t => t.StudyMaterials)
-                .Where(s => s.UserId == userId && s.Status==StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress)
+                .Where(s => s.UserId == userId && (s.Status == StudySessionStatus.NotStarted || s.Status == StudySessionStatus.InProgress))
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
                 .ToListAsync();
@@ -336,5 +359,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
 
             return _mapper.Map<StudySessionResponseDTO>(nextSession);
         }
+
+
     }
 }
