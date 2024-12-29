@@ -23,6 +23,8 @@ using StudyPlannerAPI.Validators.StudySessionValidators;
 using System.Text.Json.Serialization;
 using StudyPlannerAPI.Services.StatisticsService;
 using StudyPlannerAPI.Services.QuizService;
+using StudyPlannerAPI.Models.Quizes.RequestDTOs;
+using StudyPlannerAPI.Validators.QuizzesValidators;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -109,6 +111,7 @@ builder.Services.AddScoped<IValidator<StudyPlanDTO>, StudyPlanValidator>();
 builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
 builder.Services.AddScoped<IValidator<StudySessionDTO>, StudySessionValidator>();
 builder.Services.AddScoped<IValidator<StudyMaterialDTO>, StudyMaterialDTOValidator>();
+builder.Services.AddScoped<IValidator<QuizRequestDTO>,QuizDTOValidator>();
 
 builder.Services.AddAuthentication(options =>
 {
