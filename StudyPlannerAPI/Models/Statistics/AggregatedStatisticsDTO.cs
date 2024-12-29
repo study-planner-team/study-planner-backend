@@ -13,7 +13,8 @@ namespace StudyPlannerAPI.Models.Statistics
         public List<PreferredStudyTimesDTO> PreferredStudyTimes { get; set; }
         public List<UpcomingSessionsDTO> UpcomingSessions { get; set; }
         public List<TimeDistributionByPlanDTO> TimeDistributionByPlan { get; set; }
-
+        public List<QuizCompletionOverTimeDTO> QuizCompletionsOverTime { get; set; }
+        public List<ScoreDistributionDTO> QuizScoreDistribution { get; set; }
     }
 
     public class SessionsByDayDTO
@@ -57,5 +58,17 @@ namespace StudyPlannerAPI.Models.Statistics
     {
         public string PlanName { get; set; }
         public double TotalTime { get; set; }
+    }
+
+    public class QuizCompletionOverTimeDTO
+    {
+        public DateTime Date { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class ScoreDistributionDTO
+    {
+        public string Bucket { get; set; }  // np. "0–49"
+        public int Count { get; set; }
     }
 }
