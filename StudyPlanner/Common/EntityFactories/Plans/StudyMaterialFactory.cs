@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyPlannerTests.Common.EntityFactories
+namespace StudyPlannerTests.Common.EntityFactories.Plans
 {
     public static class StudyMaterialFactory
     {

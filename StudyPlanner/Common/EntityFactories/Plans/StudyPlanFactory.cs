@@ -1,11 +1,11 @@
 ﻿using StudyPlannerAPI.Models.StudyPlans;
 using StudyPlannerAPI.Models.Users;
 
-namespace StudyPlannerTests.Common.EntityFactories
+namespace StudyPlannerTests.Common.EntityFactories.Plans
 {
     public static class StudyPlanFactory
     {
-        public static StudyPlan CreateStudyPlan(int planId, string title, int userId, bool isPublic,  bool isArchived)
+        public static StudyPlan CreateStudyPlan(int planId, string title, int userId, bool isPublic, bool isArchived)
         {
             return new StudyPlan
             {

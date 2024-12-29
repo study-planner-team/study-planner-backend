@@ -3,7 +3,7 @@ using FluentAssertions;
 using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Services.StudySessionsServices;
 using StudyPlannerTests.Common;
-using StudyPlannerTests.Common.EntityFactories;
+using StudyPlannerTests.Common.EntityFactories.StudySessions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

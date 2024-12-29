@@ -1,6 +1,9 @@
 ﻿using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.Quizes;
 using StudyPlannerAPI.Models.StudySessions;
-using StudyPlannerTests.Common.EntityFactories;
+using StudyPlannerTests.Common.EntityFactories.Quizzes;
+using StudyPlannerTests.Common.EntityFactories.Shared;
+using StudyPlannerTests.Common.EntityFactories.Plans;
 using StudyPlannerTests.Common.EntityFactories.StudyPlannerTests.Common.EntityFactories;
 
 namespace StudyPlannerTests.Common
@@ -22,14 +25,12 @@ namespace StudyPlannerTests.Common
         {
             await SeedUsers(context);
 
-            // Add study plans
             context.StudyPlans.AddRange(
                 StudyPlanFactory.CreateStudyPlan(1, "Plan Owned by User 1", 1, true, false),
                 StudyPlanFactory.CreateStudyPlan(2, "Plan Owned by User 2", 2, false, true),
                 StudyPlanFactory.CreateStudyPlan(3, "Plan Owned by User 3", 3, false, false)
             );
 
-            // Add memberships
             context.StudyPlanMembers.AddRange(
                 StudyPlanMembersFactory.CreateMembership(2, 1),
                 StudyPlanMembersFactory.CreateMembership(1, 2) 
@@ -124,15 +125,14 @@ namespace StudyPlannerTests.Common
             await SeedStudyTopics(context);
 
             context.StudySessions.AddRange(
-                // Conflicting session at the same date and time
                 StudySessionFactory.CreateStudySession(
                     sessionId: 5,
                     studyPlanId: 1,
                     userId: 1,
                     topicId: 1,
-                    date: DateTime.UtcNow.Date, // Same date as the test's schedule
-                    startTime: TimeSpan.FromHours(8), // Start at 8:00 AM
-                    endTime: TimeSpan.FromHours(10), // End at 10:00 AM
+                    date: DateTime.UtcNow.Date,
+                    startTime: TimeSpan.FromHours(8),
+                    endTime: TimeSpan.FromHours(10),
                     status: StudySessionStatus.NotStarted
                 ),
                 StudySessionFactory.CreateStudySession(
@@ -140,11 +140,38 @@ namespace StudyPlannerTests.Common
                     studyPlanId: 1,
                     userId: 1,
                     topicId: 2,
-                    date: DateTime.UtcNow.Date.AddDays(1), // Same as the next preferred day
-                    startTime: TimeSpan.FromHours(9), // Start at 9:00 AM
-                    endTime: TimeSpan.FromHours(11), // End at 11:00 AM
+                    date: DateTime.UtcNow.Date.AddDays(1),
+                    startTime: TimeSpan.FromHours(9),
+                    endTime: TimeSpan.FromHours(11),
                     status: StudySessionStatus.InProgress
                 )
+            );
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedQuizzes(AppDbContext context)
+        {
+            await SeedStudyPlans(context);
+
+            context.Quizzes.AddRange(
+                QuizFactory.CreateQuiz(1, 1, 1, "Quiz 1"),
+                QuizFactory.CreateQuiz(2, 1, 1, "Quiz 2"),
+                QuizFactory.CreateQuiz(3, 2, 2, "Quiz 3", "Advanced Quiz")
+            );
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedQuizAssignments(AppDbContext context)
+        {
+            await SeedQuizzes(context);
+
+            context.QuizAssignments.AddRange(
+                QuizAssignmentFactory.CreateAssignment(1, 1, 1),
+                QuizAssignmentFactory.CreateAssignment(2, 2, 2),
+                QuizAssignmentFactory.CreateAssignment(3, 3, 1, QuizState.Completed),
+                QuizAssignmentFactory.CreateAssignment(4, 2, 1)
             );
 
             await context.SaveChangesAsync();
