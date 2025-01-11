@@ -7,6 +7,7 @@ using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Models.Quizes.ResponseDTOs;
+using StudyPlannerAPI.Models.Badges;
 
 namespace StudyPlannerAPI.Mapper
 {
@@ -70,6 +71,9 @@ namespace StudyPlannerAPI.Mapper
                         }
                     }
                 });
+
+            CreateMap<Badge, BadgeResponseDTO>()
+            .ForMember(dest => dest.Earned, opt => opt.Ignore());
         }
     }
 }

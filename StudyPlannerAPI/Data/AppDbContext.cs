@@ -7,6 +7,7 @@ using StudyPlannerAPI.Models.StudyMaterials;
 using StudyPlannerAPI.Models.Users;
 using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Quizes;
+using StudyPlannerAPI.Models.Badges;
 
 namespace StudyPlannerAPI.Data
 {
@@ -26,9 +27,25 @@ namespace StudyPlannerAPI.Data
         public virtual DbSet<Question> Questions { get; set; }
         public virtual DbSet<QuestionOption> QuestionOptions { get; set; }
         public virtual DbSet<QuizAssignment> QuizAssignments { get; set; }
+        public virtual DbSet<Badge> Badges { get; set; }
+        public virtual DbSet<UserBadge> UserBadges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Badge>().HasData(
+                new Badge { BadgeId = 1, Title = "First Steps", Description = "Create your first study plan", IconPath = "/assets/badges/first-steps.png" },
+                new Badge { BadgeId = 2, Title = "Quiz Genius", Description = "Solve 10 quizzes", IconPath = "/assets/badges/quiz-genius.png" },
+                new Badge { BadgeId = 3, Title = "Team Player", Description = "Join 3 group study plans", IconPath = "/assets/badges/team-player.png" },
+                new Badge { BadgeId = 4, Title = "Consistency Master", Description = "Complete study sessions for 7 consecutive days", IconPath = "/assets/badges/consistency-master.png" },
+                new Badge { BadgeId = 5, Title = "Planner Enthusiast", Description = "Create 5 study plans", IconPath = "/assets/badges/planner-enthusiast.png" },
+                new Badge { BadgeId = 6, Title = "Time Keeper", Description = "Accumulate 50 hours of study time", IconPath = "/assets/badges/time-keeper.png" },
+                new Badge { BadgeId = 7, Title = "Knowledge Sharer", Description = "Share a study plan publicly", IconPath = "/assets/badges/knowledge-sharer.png" },
+                new Badge { BadgeId = 8, Title = "Quiz Creator", Description = "Create 10 quizzes", IconPath = "/assets/badges/quiz-creator.png" }
+            );
+
+
             // StudyPlan -> StudyTopics (Cascade Delete)
             modelBuilder.Entity<StudyTopic>()
                 .HasOne(st => st.StudyPlan)
