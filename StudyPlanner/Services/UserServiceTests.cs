@@ -243,5 +243,79 @@ namespace StudyPlannerTests.Services
             // Assert
             result.Should().BeFalse();
         }
+
+        [Fact]
+        public async Task ChangePassword_ShouldUpdatePassword_WhenOldPasswordIsCorrect()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_ChangePassword_Valid");
+            await DatabaseSeeder.SeedUsers(context);
+            var service = new UserService(context, _mapper, _configuration);
+
+            var passwordChangeDTO = new UserPasswordChangeDTO
+            {
+                OldPassword = "Test123!",
+                NewPassword = "NewPassword123"
+            };
+
+            // Act
+            var result = await service.ChangePassword(1, passwordChangeDTO);
+
+            // Assert
+            result.Should().BeTrue();
+
+            // Verify the new password is hashed and updated
+            var updatedUser = await context.Users.FindAsync(1);
+            updatedUser.Should().NotBeNull();
+            BCrypt.Net.BCrypt.Verify("NewPassword123", updatedUser.PasswordHash).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ChangePassword_ShouldReturnFalse_WhenOldPasswordIsIncorrect()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_ChangePassword_Invalid");
+            await DatabaseSeeder.SeedUsers(context);
+            var service = new UserService(context, _mapper, _configuration);
+
+            var passwordChangeDTO = new UserPasswordChangeDTO
+            {
+                OldPassword = "WrongPassword123!", // Incorrect old password
+                NewPassword = "NewPassword123"
+            };
+
+            // Act
+            var result = await service.ChangePassword(1, passwordChangeDTO);
+
+            // Assert
+            result.Should().BeFalse();
+
+            // Verify the password has not changed
+            var user = await context.Users.FindAsync(1);
+            user.Should().NotBeNull();
+            BCrypt.Net.BCrypt.Verify("Test123!", user.PasswordHash).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ChangePassword_ShouldReturnFalse_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var context = InMemoryDbContextFactory.Create("TestDb_ChangePassword_NonExistent");
+            await DatabaseSeeder.SeedUsers(context);
+            var service = new UserService(context, _mapper, _configuration);
+
+            var passwordChangeDTO = new UserPasswordChangeDTO
+            {
+                OldPassword = "Test123!",
+                NewPassword = "NewPassword123"
+            };
+
+            // Act
+            var result = await service.ChangePassword(99, passwordChangeDTO);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
     }
 }
