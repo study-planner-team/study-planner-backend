@@ -17,7 +17,9 @@ namespace StudyPlannerAPI.Validators.UserValidators
                 .MinimumLength(8)
                 .WithMessage("The password must be at least 8 characters long.")
                 .Must(ContainCapitalLetter)
-                .WithMessage("The password must contain at least one uppercase letter.");
+                .WithMessage("The password must contain at least one uppercase letter.")
+                .Must((dto, newPassword) => !newPassword.Equals(dto.OldPassword))
+                .WithMessage("The new password cannot be the same as the old password.");
         }
 
         private bool ContainCapitalLetter(string password)
