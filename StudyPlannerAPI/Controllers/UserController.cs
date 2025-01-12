@@ -27,13 +27,15 @@ namespace StudyPlannerAPI.Controllers
         private IValidator<UserRegistrationDTO> _registerValidator;
         private IValidator<UserLoginDTO> _loginValidator;
         private IValidator<UserUpdateDTO> _updateValidator;
-        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator, IValidator<UserUpdateDTO> updateValidator, IBadgeService badgeService)
+        private IValidator<UserPasswordChangeDTO> _changePasswordValidator;
+        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator, IValidator<UserUpdateDTO> updateValidator, IValidator<UserPasswordChangeDTO> changePasswordValidator, IBadgeService badgeService)
         {
             _userService = userService;
             _badgeService = badgeService;
             _registerValidator = registerValidator;
             _loginValidator = loginValidator;
             _updateValidator = updateValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         [HttpPost("register")]
@@ -232,5 +234,26 @@ namespace StudyPlannerAPI.Controllers
             return Ok(badges);
         }
 
+        [HttpPost("{id}/change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] UserPasswordChangeDTO passwordChangeDTO)
+        {
+            // Validate the DTO
+            var validationResult = await _changePasswordValidator.ValidateAsync(passwordChangeDTO);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            var result = await _userService.ChangePassword(id, passwordChangeDTO);
+
+            if (!result)
+            {
+                return BadRequest("Incorrect old password or other error occurred.");
+            }
+
+            return Ok("Password changed successfully.");
+        }
     }
 }

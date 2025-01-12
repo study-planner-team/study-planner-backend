@@ -204,5 +204,20 @@ namespace StudyPlannerAPI.Services.UserServices
             return user;
         }
 
+        public async Task<bool> ChangePassword(int userId, UserPasswordChangeDTO passwordChangeDTO)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(passwordChangeDTO.OldPassword, user.PasswordHash))
+            {
+                return false;
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordChangeDTO.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

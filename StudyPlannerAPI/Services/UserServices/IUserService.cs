@@ -12,5 +12,6 @@ namespace StudyPlannerAPI.Services.UserServices
         public Task<bool> DeleteUser(int userId);
         public Task<(string?, string?, UserResponseDTO?)> HandleGoogleUser(string email, string name);
         public Task<User> FindOrCreateUserByGoogleAsync(string email, string name);
+        public Task<bool> ChangePassword(int userId, UserPasswordChangeDTO passwordChangeDTO);
     }
 }

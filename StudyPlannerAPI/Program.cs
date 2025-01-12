@@ -114,6 +114,7 @@ builder.Services.AddScoped<IValidator<StudyTopicDTO>, StudyTopicValidator>();
 builder.Services.AddScoped<IValidator<StudySessionDTO>, StudySessionValidator>();
 builder.Services.AddScoped<IValidator<StudyMaterialDTO>, StudyMaterialDTOValidator>();
 builder.Services.AddScoped<IValidator<QuizRequestDTO>,QuizDTOValidator>();
+builder.Services.AddScoped<IValidator<UserPasswordChangeDTO>, UserPasswordChangeValidator>();
 
 builder.Services.AddAuthentication(options =>
 {
