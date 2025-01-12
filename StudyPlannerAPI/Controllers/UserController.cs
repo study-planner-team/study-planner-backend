@@ -69,8 +69,8 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("accessToken", accessToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false, // Wymaga HTTPS
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddMinutes(25)
                 });
 
@@ -78,8 +78,8 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false, // Wymaga HTTPS
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 
@@ -108,8 +108,8 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("accessToken", newAccessToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddMinutes(25)
                 });
 
@@ -117,8 +117,8 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 
@@ -203,16 +203,16 @@ namespace StudyPlannerAPI.Controllers
                 Response.Cookies.Append("accessToken", accessToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddMinutes(25)
                 });
 
                 Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 
