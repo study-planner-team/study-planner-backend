@@ -13,6 +13,7 @@ using StudyPlannerAPI.Services.UserServices;
 using System.Security.Claims;
 
 using Google.Apis.Auth;
+using StudyPlannerAPI.Services.BadgeService;
 
 
 namespace StudyPlannerAPI.Controllers
@@ -22,12 +23,14 @@ namespace StudyPlannerAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IBadgeService _badgeService;
         private IValidator<UserRegistrationDTO> _registerValidator;
         private IValidator<UserLoginDTO> _loginValidator;
         private IValidator<UserUpdateDTO> _updateValidator;
-        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator, IValidator<UserUpdateDTO> updateValidator)
+        public UserController(IUserService userService, IValidator<UserRegistrationDTO> registerValidator, IValidator<UserLoginDTO> loginValidator, IValidator<UserUpdateDTO> updateValidator, IBadgeService badgeService)
         {
             _userService = userService;
+            _badgeService = badgeService;
             _registerValidator = registerValidator;
             _loginValidator = loginValidator;
             _updateValidator = updateValidator;
@@ -217,6 +220,16 @@ namespace StudyPlannerAPI.Controllers
             {
                 return BadRequest("Failed to authenticate with Google: " + ex.Message);
             }
+        }
+
+        [HttpGet("{id}/badges")]
+        [Authorize]
+        public async Task<IActionResult> GetUserBadges(int id)
+        {
+            await _badgeService.AssignBadgesToUser(id);
+
+            var badges = await _badgeService.GetUserBadges(id);
+            return Ok(badges);
         }
 
     }

@@ -25,6 +25,7 @@ using StudyPlannerAPI.Services.StatisticsService;
 using StudyPlannerAPI.Services.QuizService;
 using StudyPlannerAPI.Models.Quizes.RequestDTOs;
 using StudyPlannerAPI.Validators.QuizzesValidators;
+using StudyPlannerAPI.Services.BadgeService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -99,6 +100,7 @@ builder.Services.AddScoped<IStudySessionService, StudySessionService>();
 builder.Services.AddScoped<IStudyMaterialService, StudyMaterialService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IBadgeService, BadgeService>();
 
 //Background services
 builder.Services.AddHostedService<SessionMonitorService>();

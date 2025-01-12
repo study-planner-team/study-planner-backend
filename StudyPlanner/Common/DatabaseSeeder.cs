@@ -5,6 +5,8 @@ using StudyPlannerTests.Common.EntityFactories.Quizzes;
 using StudyPlannerTests.Common.EntityFactories.Shared;
 using StudyPlannerTests.Common.EntityFactories.Plans;
 using StudyPlannerTests.Common.EntityFactories.StudyPlannerTests.Common.EntityFactories;
+using StudyPlannerTests.Common.EntityFactories.Badges;
+using StudyPlannerAPI.Models.StudyPlans;
 
 namespace StudyPlannerTests.Common
 {
@@ -15,7 +17,8 @@ namespace StudyPlannerTests.Common
             context.Users.AddRange(
                 UserFactory.CreateUser(1, "OwnerUser", "Test123!", "owner@test.com", "valid-refresh-token", DateTime.UtcNow.AddDays(7)),
                 UserFactory.CreateUser(2, "MemberUser", "Test123!", "member@test.com", "expired-refresh-token", DateTime.UtcNow.AddDays(-1)),
-                UserFactory.CreateUser(3, "NoMembershipUser", "Test123!", "no_membership@test.com", "valid-refresh-token", DateTime.UtcNow.AddDays(7))
+                UserFactory.CreateUser(3, "NoMembershipUser", "Test123!", "no_membership@test.com", "valid-refresh-token", DateTime.UtcNow.AddDays(7)),
+                UserFactory.CreateUser(4, "BadgeUser", "Test123!", "badge@test.com", "valid-refresh-token", DateTime.UtcNow.AddDays(7))
             );
 
             await context.SaveChangesAsync();
@@ -176,5 +179,89 @@ namespace StudyPlannerTests.Common
 
             await context.SaveChangesAsync();
         }
+
+        public static async Task SeedBadges(AppDbContext context)
+        {
+            context.Badges.AddRange(
+                BadgeFactory.CreateBadge(1, "First Steps", "Create your first study plan.", "/icons/first_steps.png"),
+                BadgeFactory.CreateBadge(2, "Quiz Genius", "Create 10 quizzes.", "/icons/quiz_genius.png"),
+                BadgeFactory.CreateBadge(3, "Team Player", "Join 3 group plans.", "/icons/team_player.png"),
+                BadgeFactory.CreateBadge(4, "Consistency Master", "Study 7 consecutive days.", "/icons/consistency_master.png"),
+                BadgeFactory.CreateBadge(5, "Planner Enthusiast", "Create 5 study plans.", "/icons/planner_enthusiast.png"),
+                BadgeFactory.CreateBadge(6, "Time Keeper", "Study for 50 hours.", "/icons/time_keeper.png"),
+                BadgeFactory.CreateBadge(7, "Knowledge Sharer", "Share a study plan.", "/icons/knowledge_sharer.png")
+            );
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedUserBadges(AppDbContext context, params (int userBadgeId, int userId, int badgeId)[] userBadges)
+        {
+            foreach (var (userBadgeId, userId, badgeId) in userBadges)
+            {
+                context.UserBadges.Add(UserBadgeFactory.CreateUserBadge(userBadgeId, userId, badgeId));
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedQuizzesForBadge(AppDbContext context, int userId, int quizCount)
+        {
+            var quizzes = new List<Quiz>();
+            for (int i = 1; i <= quizCount; i++)
+            {
+                quizzes.Add(QuizFactory.CreateQuiz(i, 1, userId, $"Quiz {i}"));
+            }
+
+            context.Quizzes.AddRange(quizzes);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedStudySessionsForBadge(AppDbContext context, int userId, int consecutiveDays, int hoursPerDay = 2)
+        {
+            var sessions = new List<StudySession>();
+            for (int i = 0; i < consecutiveDays; i++)
+            {
+                sessions.Add(StudySessionFactory.CreateStudySession(
+                    sessionId: i + 1,
+                    studyPlanId: 1,
+                    userId: userId,
+                    topicId: 1,
+                    date: DateTime.UtcNow.Date.AddDays(-i),
+                    startTime: TimeSpan.FromHours(8),
+                    endTime: TimeSpan.FromHours(8 + hoursPerDay),
+                    status: StudySessionStatus.Completed,
+                    actualDuration: TimeSpan.FromHours(hoursPerDay)
+                ));
+            }
+
+            context.StudySessions.AddRange(sessions);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedStudyPlanMembersForBadge(AppDbContext context, int userId, int groupPlanCount)
+        {
+            var memberships = new List<StudyPlanMembers>();
+            for (int i = 1; i <= groupPlanCount; i++)
+            {
+                memberships.Add(StudyPlanMembersFactory.CreateMembership(userId, studyPlanId: i));
+            }
+
+            context.StudyPlanMembers.AddRange(memberships);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedStudyPlansForBadge(AppDbContext context, int userId, int planCount)
+        {
+            var plans = new List<StudyPlan>();
+            for (int i = 1; i <= planCount; i++)
+            {
+                plans.Add(StudyPlanFactory.CreateStudyPlan(i, $"Plan {i}", userId, true, false));
+            }
+
+            context.StudyPlans.AddRange(plans);
+            await context.SaveChangesAsync();
+        }
+
     }
 }
