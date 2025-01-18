@@ -61,9 +61,13 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
 
                 if (preferredStudyDays.Contains(currentDate.DayOfWeek))
                 {
-                    while (sessionsToday < scheduleData.SessionsPerDay &&
-                           IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5)) // Smallest unit to check
+                    while (sessionsToday < scheduleData.SessionsPerDay)
                     {
+                        if (!IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5))
+                        {
+                            break; // Stop if we're outside the study window
+                        }
+
                         if (topicIndex >= topics.Count)
                         {
                             break; // No more topics to schedule
@@ -73,7 +77,6 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                         double availableHours = (studyEndTime - currentStartTime).TotalHours;
                         double sessionHours = Math.Min(remainingHours, Math.Min(scheduleData.SessionLength, availableHours));
 
-                        // If we have time for a session and it doesn't conflict with existing sessions
                         if (sessionHours > 0 && !IsTimeSlotTaken(currentDate, currentStartTime, sessionHours, existingSessions))
                         {
                             var newSession = new StudySession
@@ -88,7 +91,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                             };
 
                             generatedSessions.Add(newSession);
-                            existingSessions.Add(newSession); // Add the new session to existingSessions
+                            existingSessions.Add(newSession);
 
                             remainingHours -= sessionHours;
                             sessionsToday++;
@@ -110,12 +113,17 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
                     }
                 }
 
-                if (sessionsToday == 0 || !IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5))
+                // Advance the day only when the daily session limit is reached or the study window is exhausted
+                if (sessionsToday >= scheduleData.SessionsPerDay || !IsWithinStudyWindow(currentStartTime, studyEndTime, 0.5))
                 {
                     currentDate = MoveToNextPreferredDay(currentDate.AddDays(1), preferredStudyDays);
                 }
+                else
+                {
+                    // If no sessions were created, still advance the day
+                    currentDate = MoveToNextPreferredDay(currentDate.AddDays(1), preferredStudyDays);
+                }
             }
-
             // If there are still hours left for topics, return null
             if (topicIndex < topics.Count && remainingHours > 0)
             {

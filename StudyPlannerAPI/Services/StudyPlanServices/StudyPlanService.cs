@@ -266,9 +266,7 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
             var totalSessions = userSessions.Count();
             var completedSessions = userSessions.Count(s => s.Status == StudySessionStatus.Completed);
 
-            return totalSessions > 0
-                ? (int)((double)completedSessions / totalSessions * 100)
-                : 0;
+            return totalSessions > 0 ? (int)Math.Round((double)completedSessions / totalSessions * 100, 0) : 0;
         }
     }
 }
