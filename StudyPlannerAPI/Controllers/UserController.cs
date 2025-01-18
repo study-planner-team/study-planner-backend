@@ -282,5 +282,52 @@ namespace StudyPlannerAPI.Controllers
 
             return Ok("Password changed successfully.");
         }
+
+        /// <summary>
+        /// Autoryzuje użytkownika za pomocą tokenu JWT Google
+        /// </summary>
+        /// <response code="200">Zwraca dane użytkownika oraz ustawia tokeny dostępu i odświeżania</response>
+        /// <response code="400">Jeżeli autoryzacja z Google nie powiedzie się</response>
+        [HttpPost("exchange-google-code")]
+        [ProducesResponseType(typeof(UserResponseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ExchangeGoogleCode([FromBody] string jwtToken)
+        {
+            try
+            {
+                // Verify the JWT token using Google's public keys
+                var payload = await GoogleJsonWebSignature.ValidateAsync(jwtToken);
+
+                // Extract the user's email and name from the payload
+                var email = payload.Email;
+                var name = payload.Name;
+
+                // Authenticate or create the user in the database
+                var (accessToken, refreshToken, user) = await _userService.HandleGoogleUser(email, name);
+
+                Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddMinutes(25)
+                });
+
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Wymaga HTTPS
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                });
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Failed to authenticate with Google: " + ex.Message);
+            }
+        }
+
     }
 }
