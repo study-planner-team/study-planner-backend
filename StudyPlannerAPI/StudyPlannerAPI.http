@@ -1,0 +1,6 @@
+@StudyPlannerAPI_HostAddress = http://localhost:5119
+
+GET {{StudyPlannerAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
