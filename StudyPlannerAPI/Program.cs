@@ -26,6 +26,7 @@ using StudyPlannerAPI.Services.QuizService;
 using StudyPlannerAPI.Models.Quizes.RequestDTOs;
 using StudyPlannerAPI.Validators.QuizzesValidators;
 using StudyPlannerAPI.Services.BadgeService;
+using System.Reflection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,17 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Study Planner API",
+        Description = "An API for managing study plans and materials.",
+        Contact = new OpenApiContact
+        {
+            Name = "Jakub Wojdak",
+        }
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
         Name = "Authorization",
@@ -63,14 +75,20 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
 });
 
 builder.Services.AddCors(options =>
 {
+    var frontendUrl = builder.Configuration["FrontendUrl"];
+
     options.AddPolicy("AllowProductionOrigins",
         builder =>
         {
-            builder.WithOrigins("#") //TODO: Add once the frontend is deployed
+            builder.WithOrigins(frontendUrl) //TODO: Add once the frontend is deployed
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials();
@@ -79,7 +97,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000") // Frontend URL
+            builder.WithOrigins(frontendUrl) // Frontend URL
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials(); 
@@ -160,7 +178,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Study Planner API v1");
+    });
     app.UseCors("AllowLocalhost");
 } else
 {

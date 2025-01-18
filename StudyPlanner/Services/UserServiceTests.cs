@@ -45,8 +45,8 @@ namespace StudyPlannerTests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.Username.Should().Be("NewUser");
-            result.Email.Should().Be("newuser@test.com");
+            result.Item3.Username.Should().Be("NewUser");
+            result.Item3.Email.Should().Be("newuser@test.com");
         }
 
         [Fact]

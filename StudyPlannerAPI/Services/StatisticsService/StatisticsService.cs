@@ -46,7 +46,7 @@ namespace StudyPlannerAPI.Services.StatisticsService
                 (double)a.CorrectAnswers.Value / a.TotalQuestions.Value * 100
             );
 
-            return Math.Round(average, 2);
+            return Math.Round(average, 0);
         }
 
         private async Task<List<ScoreDistributionDTO>> BuildQuizScoreDistribution(int userId)
@@ -85,23 +85,31 @@ namespace StudyPlannerAPI.Services.StatisticsService
         private async Task<PrecomputedMetricsDTO> BuildPrecomputedMetricsDTO(int userId, double averageQuizScore)
         {
             int completedSessions = await _context.StudySessions
-                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Completed)
+                .Where(s => s.UserId == userId &&
+                    _context.StudyPlans.Any(p => p.StudyPlanId == s.StudyPlanId && !p.IsArchived &&
+                        (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId))))
                 .CountAsync();
 
             int missedSessions = await _context.StudySessions
-                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Missed)
+                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Missed &&
+                    _context.StudyPlans.Any(p => p.StudyPlanId == s.StudyPlanId && !p.IsArchived &&
+                        (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId))))
                 .CountAsync();
 
             int inProgressSessions = await _context.StudySessions
-                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.InProgress)
+                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.InProgress &&
+                    _context.StudyPlans.Any(p => p.StudyPlanId == s.StudyPlanId && !p.IsArchived &&
+                        (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId))))
                 .CountAsync();
 
             int activePlans = await _context.StudyPlans
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => !p.IsArchived &&
+                            (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId)))
                 .CountAsync();
 
             int archivedPlans = await _context.StudyPlans
-                .Where(p => p.UserId == userId && p.IsArchived)
+                .Where(p => p.IsArchived &&
+                            (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId)))
                 .CountAsync();
 
             int joinedPlans = await _context.StudyPlanMembers
@@ -156,7 +164,8 @@ namespace StudyPlannerAPI.Services.StatisticsService
                 .ToListAsync();
 
             var timeDistribution = await _context.StudyPlans
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => !p.IsArchived &&
+                            (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId)))
                 .SelectMany(p => p.StudyTopics)
                 .GroupBy(t => t.Title)
                 .Select(g => new TimeDistributionDTO
@@ -180,15 +189,17 @@ namespace StudyPlannerAPI.Services.StatisticsService
                 .ToList();
 
             var progressTowardGoals = await _context.StudyPlans
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => !p.IsArchived &&
+                            (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId)))
                 .Select(plan => new ProgressTowardGoalsDTO
                 {
                     PlanName = plan.Title,
-                    CompletionPercentage = Math.Round(
-                        (double)_context.StudySessions.Count(s => s.StudyPlanId == plan.StudyPlanId && s.Status == StudySessionStatus.Completed) /
-                        Math.Max(1, _context.StudySessions.Count(s => s.StudyPlanId == plan.StudyPlanId)) * 100, 2)
+                    CompletionPercentage = (int)Math.Round(
+                        (double)_context.StudySessions.Count(s => s.StudyPlanId == plan.StudyPlanId && s.Status == StudySessionStatus.Completed && s.UserId == userId) /
+                        Math.Max(1, _context.StudySessions.Count(s => s.StudyPlanId == plan.StudyPlanId && s.UserId == userId)) * 100, 0)
                 })
                 .ToListAsync();
+
 
             var preferredStudyTimes = await _context.StudySessions
                 .Where(s => s.UserId == userId)
@@ -211,15 +222,13 @@ namespace StudyPlannerAPI.Services.StatisticsService
                 .ToListAsync();
 
             var timeDistributionByPlan = await _context.StudyPlans
-                .Where(p => p.UserId == userId && !p.IsArchived)
+                .Where(p => !p.IsArchived &&
+                            (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId)))
                 .Select(plan => new TimeDistributionByPlanDTO
                 {
                     PlanName = plan.Title,
                     TotalTime = Math.Round(
-                        plan.StudySessions.Any()
-                            ? plan.StudySessions.Sum(s => s.Duration) / 60.0
-                            : plan.StudyTopics.Sum(t => t.Hours),
-                        2)
+                        plan.StudySessions.Where(s => s.UserId == userId).Sum(s => s.Duration) / 60.0, 2)
                 })
                 .ToListAsync();
 

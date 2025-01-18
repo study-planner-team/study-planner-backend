@@ -85,13 +85,13 @@ namespace StudyPlannerAPI.Services.QuizService
             return true;
         }
 
-        public async Task<IEnumerable<QuizAssignmentResponseDTO>> GetAssignedQuizzes(int userId)
+        public async Task<IEnumerable<QuizAssignmentResponseDTO>> GetAssignedQuizzes(int userId, int studyPlanId)
         {
             var assignments = await _context.QuizAssignments
                 .Include(a => a.Quiz)
                 .ThenInclude(q => q.Questions)
                 .ThenInclude(q => q.Options)
-                .Where(a => a.AssignedToUserId == userId && a.State == QuizState.Assigned)
+                .Where(a => a.AssignedToUserId == userId && a.State == QuizState.Assigned && a.Quiz.StudyPlanId == studyPlanId)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<QuizAssignmentResponseDTO>>(assignments);
@@ -111,15 +111,15 @@ namespace StudyPlannerAPI.Services.QuizService
             return _mapper.Map<QuizAssignmentResponseDTO>(assignment);
         }
 
-        public async Task<IEnumerable<QuizResponseDTO>> GetCreatedQuizzes(int userId)
+        public async Task<IEnumerable<QuizResponseDTO>> GetCreatedQuizzes(int userId, int studyPlanId)
         {
-            var assignments = await _context.Quizzes
+            var quizzes = await _context.Quizzes
                 .Include(q => q.Questions)
                 .ThenInclude(q => q.Options)
-                .Where(q => q.CreatedByUserId == userId)
+                .Where(q => q.CreatedByUserId == userId && q.StudyPlanId == studyPlanId)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<QuizResponseDTO>>(assignments);
+            return _mapper.Map<IEnumerable<QuizResponseDTO>>(quizzes);
         }
 
         public Task<IEnumerable<QuizResponseDTO>> GetQuizzesForStudyPlan(int studyPlanId)
@@ -170,13 +170,13 @@ namespace StudyPlannerAPI.Services.QuizService
             return _mapper.Map<QuizAssignmentResponseDTO?>(assignment);
         }
 
-        public async Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId)
+        public async Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId, int studyPlanId)
         {
             var assignments = await _context.QuizAssignments
                 .Include(a => a.Quiz)
                 .ThenInclude(q => q.Questions)
                 .ThenInclude(q => q.Options)
-                .Where(a => a.AssignedToUserId == userId && a.State == QuizState.Completed)
+                .Where(a => a.AssignedToUserId == userId && a.State == QuizState.Completed && a.Quiz.StudyPlanId == studyPlanId)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<QuizAssignmentResponseDTO>>(assignments);

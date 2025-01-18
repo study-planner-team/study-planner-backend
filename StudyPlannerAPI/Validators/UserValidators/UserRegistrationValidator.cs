@@ -10,6 +10,7 @@ namespace StudyPlannerAPI.Validators.UserValidators
             RuleFor(u => u.Username)
                 .NotEmpty()
                 .MinimumLength(3)
+                .MaximumLength(30)
                 .WithMessage("The username must be at least 3 characters long.");
 
             RuleFor(u => u.Password)

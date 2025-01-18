@@ -4,7 +4,7 @@ namespace StudyPlannerAPI.Services.UserServices
 {
     public interface IUserService
     {
-        public Task<UserRegistrationDTO> RegisterUser(UserRegistrationDTO userDTO);
+        public Task<(string?, string?, UserResponseDTO?)> RegisterUser(UserRegistrationDTO userDTO);
         public Task<(string?, string?, UserResponseDTO?)> LoginUser(UserLoginDTO loginDTO);
         public Task<(string?, string?)> RefreshToken(string oldRefreshToken);
         public Task<bool> LogoutUser(string refreshToken);
