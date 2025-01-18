@@ -63,7 +63,12 @@ namespace StudyPlannerAPI.Services.UserServices
         public async Task<(string?,string?, UserResponseDTO?)> LoginUser(UserLoginDTO loginDTO)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => EF.Functions.Collate(u.Username, "SQL_Latin1_General_CP1_CS_AS") == loginDTO.Username); // Ensure Case Sensitive
+                .FirstOrDefaultAsync(u => u.Username == loginDTO.Username);
+
+            if (user != null && !string.Equals(user.Username, loginDTO.Username, StringComparison.Ordinal))
+            {
+                user = null;
+            }
 
             if (user != null && BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.PasswordHash))
             {

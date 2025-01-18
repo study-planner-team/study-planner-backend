@@ -164,7 +164,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetAssignedQuizzes(1);
+            var result = await service.GetAssignedQuizzes(1, 1);
 
             // Assert
             result.Should().NotBeEmpty();
@@ -181,7 +181,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetAssignedQuizzes(99);
+            var result = await service.GetAssignedQuizzes(99,1 );
 
             // Assert
             result.Should().BeEmpty();
@@ -228,7 +228,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetCreatedQuizzes(1);
+            var result = await service.GetCreatedQuizzes(1, 1);
 
             // Assert
             result.Should().NotBeEmpty();
@@ -246,7 +246,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetCreatedQuizzes(99);
+            var result = await service.GetCreatedQuizzes(99, 1);
 
             // Assert
             result.Should().BeEmpty();
@@ -307,7 +307,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetCompletedQuizzes(1);
+            var result = await service.GetCompletedQuizzes(1, 2);
 
             // Assert
             result.Should().NotBeEmpty();
@@ -325,7 +325,7 @@ namespace StudyPlannerTests.Services
             var service = new QuizService(context, _mapper);
 
             // Act
-            var result = await service.GetCompletedQuizzes(99);
+            var result = await service.GetCompletedQuizzes(99, 1);
 
             // Assert
             result.Should().BeEmpty();
