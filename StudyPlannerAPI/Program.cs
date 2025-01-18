@@ -83,10 +83,12 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options =>
 {
+    var frontendUrl = builder.Configuration["FrontendUrl"];
+
     options.AddPolicy("AllowProductionOrigins",
         builder =>
         {
-            builder.WithOrigins("#") //TODO: Add once the frontend is deployed
+            builder.WithOrigins(frontendUrl) //TODO: Add once the frontend is deployed
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials();
@@ -95,7 +97,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000") // Frontend URL
+            builder.WithOrigins(frontendUrl) // Frontend URL
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials(); 
