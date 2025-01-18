@@ -43,14 +43,37 @@ namespace StudyPlannerAPI.Controllers
         {
             var validationResult = await _registerValidator.ValidateAsync(userDTO);
 
-            if (validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
-                await _userService.RegisterUser(userDTO);
-
-                return Ok("Konto zostało pomyślnie utworzone.");
+                return BadRequest(validationResult.Errors);
             }
 
-            return BadRequest(validationResult.Errors);
+            var (accessToken, refreshToken, userResponse) = await _userService.RegisterUser(userDTO);
+
+            if (userResponse == null)
+            {
+                return BadRequest("Email or username already exists.");
+            }
+
+            // Set the access token as an HttpOnly cookie
+            Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Requires HTTPS
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddMinutes(25)
+            });
+
+            // Set the refresh token as an HttpOnly cookie
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Requires HTTPS
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(userResponse);
         }
 
         [HttpPost("login")]

@@ -38,6 +38,11 @@ namespace StudyPlannerAPI.Controllers
             }
 
             var addedTopic = await _studyTopicService.AddTopicToStudyPlan(studyPlanId, topicDTO);
+            if(addedTopic == null)
+            {
+                return BadRequest("The topic already exists in the study plan.");
+            }
+
             return Ok(addedTopic);
         }
 

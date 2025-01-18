@@ -34,6 +34,11 @@ namespace StudyPlannerAPI.Controllers
 
             var studyPlan = await _studyPlanService.CreateStudyPlan(userId, studyPlanDTO);
 
+            if(studyPlan == null)
+            {
+                return BadRequest("The plan name is not unique based on the visibility settings.");
+            }
+
             return Ok(studyPlan);
         }
 

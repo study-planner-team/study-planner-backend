@@ -25,28 +25,53 @@ namespace StudyPlannerAPI.Services.UserServices
             _mapper = mapper;
             _configuration = configuration;
         }
-        public async Task<UserRegistrationDTO> RegisterUser(UserRegistrationDTO userDTO)
+        public async Task<(string?, string?, UserResponseDTO?)> RegisterUser(UserRegistrationDTO userDTO)
         {
+            var normalizedEmail = userDTO.Email.ToLower();
+            var normalizedUsername = userDTO.Username.ToLower();
+
+            var userExists = await _context.Users.AnyAsync(u =>
+                u.Email.ToLower() == normalizedEmail ||
+                u.Username.ToLower() == normalizedUsername);
+
+            if (userExists)
+            {
+                return (null, null, null);
+            }
+
             var user = _mapper.Map<User>(userDTO);
+            user.Email = normalizedEmail;
+            user.Username = userDTO.Username;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return userDTO;
+            // Generate tokens
+            var accessToken = CreateToken(user, 25); // Replace with your token creation logic
+            var refreshToken = GenerateRefreshToken();
+
+            // Save refresh token to the user
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            var userResponse = _mapper.Map<UserResponseDTO>(user);
+            return (accessToken, refreshToken, userResponse);
         }
+
 
         public async Task<(string?,string?, UserResponseDTO?)> LoginUser(UserLoginDTO loginDTO)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Username.Equals(loginDTO.Username));
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => EF.Functions.Collate(u.Username, "SQL_Latin1_General_CP1_CS_AS") == loginDTO.Username); // Ensure Case Sensitive
 
             if (user != null && BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.PasswordHash))
             {
                 var accessToken = CreateToken(user, 25);
                 var refreshToken = GenerateRefreshToken();
 
-                // Save refresh token to database with expiration
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // 7 days expiry for refresh token
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
                 await _context.SaveChangesAsync();
 
                 var userResponse = _mapper.Map<UserResponseDTO>(user);
@@ -66,13 +91,12 @@ namespace StudyPlannerAPI.Services.UserServices
 
             if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
-                return (null, null); // Invalid or expired refresh token
+                return (null, null);
             }
 
             var newAccessToken = CreateToken(user, 25);
             var newRefreshToken = GenerateRefreshToken();
 
-            // Update the user's refresh token and expiration
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
@@ -83,15 +107,13 @@ namespace StudyPlannerAPI.Services.UserServices
         }
         public async Task<bool> LogoutUser(string refreshToken)
         {
-            // Find the user by ID and refresh token
             var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             if (user == null)
             {
-                return false; // User or refresh token not found
+                return false;
             }
 
-            // Invalidate the refresh token
             user.RefreshToken = null;
             user.RefreshTokenExpiryTime = null;
 

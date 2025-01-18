@@ -45,6 +45,10 @@ namespace StudyPlannerAPI.Data
                 new Badge { BadgeId = 8, Title = "Quiz Creator", Description = "Create 10 quizzes", IconPath = "/assets/badges/quiz-creator.png" }
             );
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.Username)
+                .HasColumnType("NVARCHAR(255)")
+                .UseCollation("SQL_Latin1_General_CP1_CS_AS"); // Case-sensitive collation for SQL Server
 
             // StudyPlan -> StudyTopics (Cascade Delete)
             modelBuilder.Entity<StudyTopic>()

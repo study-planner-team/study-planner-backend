@@ -11,10 +11,10 @@ namespace StudyPlannerAPI.Services.QuizService
         public Task<IEnumerable<QuizResponseDTO>> GetQuizzesForStudyPlan(int studyPlanId);
         public Task<bool> DeleteQuiz(int quizId);
         public Task<bool> AssignQuizToUser(int quizId, int userId);
-        public Task<IEnumerable<QuizAssignmentResponseDTO>> GetAssignedQuizzes(int userId);
+        public Task<IEnumerable<QuizAssignmentResponseDTO>> GetAssignedQuizzes(int userId, int studyPlanId);
         public Task<QuizAssignmentResponseDTO?> GetAssignedQuizById(int userId, int quizId);
-        public Task<IEnumerable<QuizResponseDTO>> GetCreatedQuizzes(int userId);
+        public Task<IEnumerable<QuizResponseDTO>> GetCreatedQuizzes(int userId, int studyPlanId);
         public Task<QuizAssignmentResponseDTO?> UpdateQuizScore(int assignmentId, ICollection<UserAnswerDTO> userAnswers);
-        public Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId);
+        public Task<IEnumerable<QuizAssignmentResponseDTO>> GetCompletedQuizzes(int userId, int studyPlanId);
     }
 }

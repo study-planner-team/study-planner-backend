@@ -29,10 +29,14 @@ namespace StudyPlannerAPI.Services.StudyTopicServices
             return studyTopicDTOs;
         }
 
-        public async Task<StudyTopic> AddTopicToStudyPlan(int studyPlanId, StudyTopicDTO topicDTO)
+        public async Task<StudyTopic?> AddTopicToStudyPlan(int studyPlanId, StudyTopicDTO topicDTO)
         {
-            var topic = _mapper.Map<StudyTopic>(topicDTO);
+            var exists = await _context.StudyTopics
+                .AnyAsync(t => t.StudyPlanId == studyPlanId && t.Title == topicDTO.Title);
+            if (exists)
+                return null;
 
+            var topic = _mapper.Map<StudyTopic>(topicDTO);
             topic.StudyPlanId = studyPlanId;
 
             _context.StudyTopics.Add(topic);

@@ -13,5 +13,6 @@ namespace StudyPlannerAPI.Models.StudyPlans
         public bool IsPublic { get; set; }
         public bool IsArchived { get; set; }
         public UserResponseDTO Owner { get; set; }
+        public int Progress { get; set; }
     }
 }

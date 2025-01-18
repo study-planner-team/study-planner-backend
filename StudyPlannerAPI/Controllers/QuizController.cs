@@ -74,10 +74,10 @@ namespace StudyPlannerAPI.Controllers
         }
 
         [HttpGet("assigned")]
-        public async Task<IActionResult> GetAssignedQuizzes()
+        public async Task<IActionResult> GetAssignedQuizzes(int studyPlanId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var assignedQuizzes = await _quizService.GetAssignedQuizzes(userId);
+            var assignedQuizzes = await _quizService.GetAssignedQuizzes(userId, studyPlanId);
 
             return Ok(assignedQuizzes);
         }
@@ -97,12 +97,12 @@ namespace StudyPlannerAPI.Controllers
         }
 
         [HttpGet("created")]
-        public async Task<IActionResult> GetCreatedQuizzes()
+        public async Task<IActionResult> GetCreatedQuizzes(int studyPlanId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var assignedQuizzes = await _quizService.GetCreatedQuizzes(userId);
+            var createdQuizzes = await _quizService.GetCreatedQuizzes(userId, studyPlanId);
 
-            return Ok(assignedQuizzes);
+            return Ok(createdQuizzes);
         }
 
         [HttpPut("assigned/{assignmentId}/complete")]
@@ -120,10 +120,10 @@ namespace StudyPlannerAPI.Controllers
         }
 
         [HttpGet("completed")]
-        public async Task<IActionResult> GetCompletedQuizzes()
+        public async Task<IActionResult> GetCompletedQuizzes(int studyPlanId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var completedQuizzes = await _quizService.GetCompletedQuizzes(userId);
+            var completedQuizzes = await _quizService.GetCompletedQuizzes(userId, studyPlanId);
 
             return Ok(completedQuizzes);
         }

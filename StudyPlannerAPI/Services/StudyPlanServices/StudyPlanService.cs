@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StudyPlannerAPI.Data;
 using StudyPlannerAPI.Models.StudyPlans;
+using StudyPlannerAPI.Models.StudySessions;
 using StudyPlannerAPI.Models.Users;
 
 namespace StudyPlannerAPI.Services.StudyPlanServices
@@ -16,8 +17,14 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
             _context = context;
             _mapper = mapper;
         }
-        public async Task<StudyPlanResponseDTO> CreateStudyPlan(int userId, StudyPlanDTO studyPlanDTO)
+        public async Task<StudyPlanResponseDTO?> CreateStudyPlan(int userId, StudyPlanDTO studyPlanDTO)
         {
+            // Validate title uniqueness
+            if (!await IsPlanNameUnique(userId, studyPlanDTO.Title, studyPlanDTO.IsPublic))
+            {
+                return null;
+            }
+
             var studyPlan = _mapper.Map<StudyPlan>(studyPlanDTO);
             studyPlan.UserId = userId;
 
@@ -62,9 +69,21 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
         public async Task<IEnumerable<StudyPlanResponseDTO>> GetStudyPlansForUser(int userId)
         {
-            var studyPlans = await _context.StudyPlans.Include(sp => sp.User).Where(sp => sp.UserId == userId && sp.IsArchived == false).ToListAsync();
+            var studyPlans = await _context.StudyPlans
+                .Include(sp => sp.StudySessions) // Include sessions for calculation
+                .Include(sp => sp.User) // Include user for Owner mapping
+                .Where(sp => sp.UserId == userId && sp.IsArchived == false)
+                .ToListAsync();
 
-            return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
+            var studyPlanDTOs = _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(studyPlans);
+
+            foreach (var dto in studyPlanDTOs)
+            {
+                var correspondingPlan = studyPlans.First(sp => sp.StudyPlanId == dto.StudyPlanId);
+                dto.Progress = CalculateProgress(correspondingPlan.StudySessions, userId);
+            }
+
+            return studyPlanDTOs;
         }
 
         public async Task<StudyPlanResponseDTO?> UpdateStudyPlan(int planId, StudyPlanDTO studyPlanDTO)
@@ -134,13 +153,24 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
         public async Task<IEnumerable<StudyPlanResponseDTO>> GetJoinedStudyPlansForUser(int userId)
         {
             var joinedPlans = await _context.StudyPlans
+                .Include(sp => sp.StudySessions) // Include sessions for calculation
+                .Include(sp => sp.User) // Include user for Owner mapping
                 .Where(sp => _context.StudyPlanMembers
                     .Any(m => m.StudyPlanId == sp.StudyPlanId && m.UserId == userId) // User is a member
                     && sp.UserId != userId) // Exclude plans where the user is the owner
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(joinedPlans);
+            var studyPlanDTOs = _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(joinedPlans);
+
+            foreach (var dto in studyPlanDTOs)
+            {
+                var correspondingPlan = joinedPlans.First(sp => sp.StudyPlanId == dto.StudyPlanId);
+                dto.Progress = CalculateProgress(correspondingPlan.StudySessions, userId);
+            }
+
+            return studyPlanDTOs;
         }
+
 
         public async Task<bool> JoinPublicStudyPlan(int userId, int studyPlanId)
         {
@@ -215,6 +245,30 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        // Check if plan is unique
+        private async Task<bool> IsPlanNameUnique(int userId, string title, bool isPublic)
+        {
+            if (isPublic)
+            {
+                return !await _context.StudyPlans.AnyAsync(p => p.Title == title && p.IsPublic);
+            }
+            else
+            {
+                return !await _context.StudyPlans.AnyAsync(p => p.Title == title && p.UserId == userId);
+            }
+        }
+
+        private int CalculateProgress(IEnumerable<StudySession> sessions, int userId)
+        {
+            var userSessions = sessions.Where(s => s.UserId == userId);
+            var totalSessions = userSessions.Count();
+            var completedSessions = userSessions.Count(s => s.Status == StudySessionStatus.Completed);
+
+            return totalSessions > 0
+                ? (int)((double)completedSessions / totalSessions * 100)
+                : 0;
         }
     }
 }
