@@ -7,6 +7,8 @@
     <UserSecretsId>9bd06386-c9c9-4c57-86e6-194198cdae10</UserSecretsId>
   </PropertyGroup>
 
+
+
   <ItemGroup>
     <Compile Remove="Validators\QuizValidators\**" />
     <Content Remove="Validators\QuizValidators\**" />
@@ -28,8 +30,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.2" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
   </ItemGroup>
 
@@ -37,5 +40,10 @@
     <Folder Include="Migrations\" />
     <Folder Include="Validators\QuizzesValidators\" />
   </ItemGroup>
+
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
 
 </Project>
