@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'study-planner-api'
           slot-name: 'Production'
-          package: ${{ env.DOTNET_ROOT }}/myapp
+          package: .
           
