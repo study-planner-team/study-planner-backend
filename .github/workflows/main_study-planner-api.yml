@@ -24,6 +24,9 @@ jobs:
       - name: Build with dotnet
         run: dotnet build StudyPlannerAPI/StudyPlannerAPI.csproj --configuration Release
 
+      - name: Run unit tests
+        run: dotnet test StudyPlannerTests/StudyPlannerTests.csproj --configuration Release
+      
       - name: dotnet publish
         run: dotnet publish StudyPlannerAPI/StudyPlannerAPI.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
