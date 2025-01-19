@@ -30,7 +30,7 @@ namespace StudyPlannerAPI.Controllers
         /// <response code="200">Zwraca wygenerowany harmonogram</response>
         /// <response code="400">Jeżeli harmonogram nie mógł zostać wygenerowany</response>
         [HttpPost("generate")]
-        [ProducesResponseType(typeof(List<StudySession>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<StudySessionResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GenerateSchedule([FromBody] StudySessionDTO scheduleData)
         {
