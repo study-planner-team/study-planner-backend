@@ -85,7 +85,7 @@ namespace StudyPlannerAPI.Services.StatisticsService
         private async Task<PrecomputedMetricsDTO> BuildPrecomputedMetricsDTO(int userId, double averageQuizScore)
         {
             int completedSessions = await _context.StudySessions
-                .Where(s => s.UserId == userId &&
+                .Where(s => s.UserId == userId && s.Status == StudySessionStatus.Completed &&
                     _context.StudyPlans.Any(p => p.StudyPlanId == s.StudyPlanId && !p.IsArchived &&
                         (p.UserId == userId || _context.StudyPlanMembers.Any(m => m.StudyPlanId == p.StudyPlanId && m.UserId == userId))))
                 .CountAsync();

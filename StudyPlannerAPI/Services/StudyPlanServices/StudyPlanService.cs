@@ -157,7 +157,7 @@ namespace StudyPlannerAPI.Services.StudyPlanServices
                 .Include(sp => sp.User) // Include user for Owner mapping
                 .Where(sp => _context.StudyPlanMembers
                     .Any(m => m.StudyPlanId == sp.StudyPlanId && m.UserId == userId) // User is a member
-                    && sp.UserId != userId) // Exclude plans where the user is the owner
+                    && sp.UserId != userId && sp.IsArchived == false) // Exclude plans where the user is the owner
                 .ToListAsync();
 
             var studyPlanDTOs = _mapper.Map<IEnumerable<StudyPlanResponseDTO>>(joinedPlans);

@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using StudyPlannerAPI.Data;
+using StudyPlannerAPI.Models.Badges;
+using StudyPlannerAPI.Models.StudyTopics;
 using StudyPlannerAPI.Models.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -246,5 +249,29 @@ namespace StudyPlannerAPI.Services.UserServices
             return true;
         }
 
+        public async Task<IEnumerable<PublicUserResponseDTO>> GetPublicUsersWithBadges(int currentUserId)
+        {
+            var usersWithBadges = await _context.Users
+                .Where(u => u.IsPublic && u.UserId != currentUserId) // Exclude the current user
+                .Select(u => new PublicUserResponseDTO
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    Badges = _context.UserBadges
+                        .Where(ub => ub.UserId == u.UserId)
+                        .Select(ub => new BadgeResponseDTO
+                        {
+                            BadgeId = ub.Badge.BadgeId,
+                            Title = ub.Badge.Title,
+                            Description = ub.Badge.Description,
+                            IconPath = ub.Badge.IconPath,
+                            Earned = true // All badges here are earned
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return usersWithBadges;
+        }
     }
 }
