@@ -23,6 +23,7 @@ namespace StudyPlannerAPI.Mapper
                 .ForMember(dest => dest.IsGoogleUser, opt => opt.MapFrom(src => src.IsGoogleUser));
                 
             CreateMap<UserUpdateDTO, User>();
+            CreateMap<User, PublicUserResponseDTO>();
 
             // StudyPlan
             CreateMap<StudyPlanDTO, StudyPlan>();

@@ -256,6 +256,19 @@ namespace StudyPlannerAPI.Controllers
         }
 
         /// <summary>
+        /// Pobiera dane o publicznych profilach użytkowników
+        /// </summary>
+        /// <response code="200">Zwraca listę profilów użytkowników</response>
+        [HttpGet("profiles/public")]
+        [ProducesResponseType(typeof(IEnumerable<PublicUserResponseDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicProfiles()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var publicProfiles = await _userService.GetPublicUsersWithBadges(userId);
+            return Ok(publicProfiles);
+        }
+
+        /// <summary>
         /// Zmienia hasło użytkownika
         /// </summary>
         /// <response code="200">Jeżeli hasło zostało zmienione</response>

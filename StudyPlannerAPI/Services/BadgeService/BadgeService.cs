@@ -20,12 +20,13 @@ namespace StudyPlannerAPI.Services.BadgeService
         {
             var badges = await _context.Badges.ToListAsync();
 
-            var badgeDTOs = _mapper.Map<List<BadgeResponseDTO>>(badges);
+            var earnedBadgeIds = await _context.UserBadges
+                .Where(ub => ub.UserId == userId)
+                .Select(ub => ub.BadgeId)
+                .ToListAsync();
 
-            foreach (var badgeDTO in badgeDTOs)
-            {
-                badgeDTO.Earned = await _context.UserBadges.AnyAsync(ub => ub.UserId == userId && ub.BadgeId == badgeDTO.BadgeId);
-            }
+            var badgeDTOs = _mapper.Map<List<BadgeResponseDTO>>(badges);
+            badgeDTOs.ForEach(badge => badge.Earned = earnedBadgeIds.Contains(badge.BadgeId));
 
             return badgeDTOs;
         }

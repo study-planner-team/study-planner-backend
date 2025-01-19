@@ -17,7 +17,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             _mapper = mapper;
         }
 
-        public async Task<List<StudySession>?> GenerateAndStoreSchedule(StudySessionDTO scheduleData)
+        public async Task<List<StudySessionResponseDTO>?> GenerateAndStoreSchedule(StudySessionDTO scheduleData)
         {
             // Extract TimeSpan from DateTime properties
             var studyStartTime = scheduleData.StudyStartTime.TimeOfDay;
@@ -139,7 +139,7 @@ namespace StudyPlannerAPI.Services.StudySessionsServices
             await _context.StudySessions.AddRangeAsync(generatedSessions);
             await _context.SaveChangesAsync();
 
-            return generatedSessions;
+            return _mapper.Map<List<StudySessionResponseDTO>>(generatedSessions);
         }
 
         private List<DayOfWeek> MapDaysToEnum(List<string> preferredStudyDays)
