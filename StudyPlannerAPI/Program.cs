@@ -108,7 +108,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
                    options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnString")));
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
@@ -121,7 +121,7 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IBadgeService, BadgeService>();
 
 //Background services
-builder.Services.AddHostedService<SessionMonitorService>();
+// builder.Services.AddHostedService<SessionMonitorService>();
 
 // Validators
 builder.Services.AddScoped<IValidator<UserRegistrationDTO>, UserRegistrationValidator>();
@@ -188,7 +188,7 @@ if (app.Environment.IsDevelopment())
     app.UseCors("AllowProductionOrigins");
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

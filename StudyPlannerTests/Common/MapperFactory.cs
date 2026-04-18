@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using StudyPlannerAPI.Mapper;
 
 namespace StudyPlannerTests.Common
@@ -9,8 +10,8 @@ namespace StudyPlannerTests.Common
         {
             var configuration = new MapperConfiguration(config =>
             {
-                config.AddProfile<AutoMapperProfile>(); 
-            });
+                config.AddProfile<AutoMapperProfile>();
+            }, NullLoggerFactory.Instance);
 
             return configuration.CreateMapper();
         }
