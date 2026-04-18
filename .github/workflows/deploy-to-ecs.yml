@@ -36,7 +36,7 @@ jobs:
         run: dotnet build StudyPlannerAPI/StudyPlannerAPI.csproj --configuration Release --no-restore
 
       - name: Run unit tests
-        run: dotnet test StudyPlannerTests/StudyPlannerTests.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test StudyPlannerTests/StudyPlannerTests.csproj --configuration Release
 
   build-image:
     name: Build Docker image
